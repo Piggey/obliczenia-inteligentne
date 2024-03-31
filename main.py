@@ -1,10 +1,13 @@
 import numpy as np
 import pandas
+from scipy.spatial import Voronoi, voronoi_plot_2d
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score
 from sklearn.cluster import KMeans
 from scipy.spatial import Voronoi, voronoi_plot_2d
+
+from dbscan import dbs_calculate_silhouette_scores, dbs_plot_silhouette_scores, dbs_plot_voronoi
 
 SCALE = 1.05
 COLORS = ['red', 'green', 'blue', 'purple', 'orange', 'pink', 'cyan', 'olive', 'brown', 'gray']
@@ -74,6 +77,37 @@ def plot_voronoi_diagram(X, y_true, y_pred, subtitle=None):
     plt.ylim([x2_min * SCALE, x2_max * SCALE])
     plt.show()
 
-# X, y = load_data("./data/1_2.csv")
-# plot_voronoi_diagram(X, y, y)
-# plot_silhouette_score(X, y)
+def plot_silhouette_score(X, y):
+    scores = [0, 0]
+    n_clusters_max = 10
+
+    for n in range(2, n_clusters_max):
+        kmeans = KMeans(n_clusters=n, random_state=1, n_init="auto")
+        scores.append(silhouette_score(X, kmeans.fit_predict(X)))
+
+    plt.plot(np.arange(n_clusters_max), scores)
+    plt.xlim([2, n_clusters_max - 1])
+    plt.ylabel('silhouette score')
+    plt.xlabel('n_clusters')
+    plt.show()
+
+
+DATASETS = [
+  'data/1_1.csv',
+  'data/1_2.csv',
+  'data/1_3.csv',
+  'data/2_1.csv',
+  'data/2_2.csv',
+  'data/2_3.csv',
+]
+
+EPS_VALUES = np.linspace(0.01, 1.99, 20)
+
+if __name__ == '__main__':
+  X, y = load_data(DATASETS[3])
+  # plot_voronoi_diagram(X, y, y)
+  # plot_silhouette_score(X, y)
+  dbs_silhouette_scores, dbs_cluster_counts = dbs_calculate_silhouette_scores(X, EPS_VALUES)
+
+  dbs_plot_silhouette_scores(EPS_VALUES, dbs_silhouette_scores, dbs_cluster_counts)
+  dbs_plot_voronoi(X, EPS_VALUES, dbs_silhouette_scores)
