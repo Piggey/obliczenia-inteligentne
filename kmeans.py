@@ -67,6 +67,8 @@ def plot_voronoi_diagram(X, y_true, y_pred, subtitle=None):
     plt.xlim([x1_min * SCALE, x1_max * SCALE])
     plt.ylim([x2_min * SCALE, x2_max * SCALE])
     plt.show()
+    # plt.savefig(f'{subtitle}_vor.png')
+    # plt.close()
 
 
 def plot_silhouette_score(X, y):
@@ -107,21 +109,23 @@ def analyze_kmeans_silhouette_score(X, y, dataset_name):
             worst_score = score
             worst_score_idx = n
 
-    print(f'{dataset_name} best silhouette score: {best_score} for n_clusters={best_score_idx}')
-    print(f'{dataset_name} worst silhouette score: {worst_score} for n_clusters={worst_score_idx}')
+    print(f'(Exp 1) {dataset_name} dataset; best silhouette score: {best_score} for n_clusters={best_score_idx}')
+    print(f'(Exp 1) {dataset_name} dataset; worst silhouette score: {worst_score} for n_clusters={worst_score_idx}')
 
     plt.plot(np.arange(n_clusters_max), scores)
     plt.xlim([2, n_clusters_max - 1])
     plt.ylabel('silhouette score')
     plt.xlabel('n_clusters')
-    plt.title(f'For {dataset_name} dataset')
+    plt.title(f'Silhouette score for {dataset_name} dataset')
     plt.show()
+    # plt.savefig(f'{dataset_name}_sil.png')
+    # plt.close()
 
     if X.shape[1] == 2:
         kmeans = KMeans(n_clusters=best_score_idx, random_state=1, n_init="auto")
-        plot_voronoi_diagram(X, None, kmeans.fit_predict(X), f'{dataset_name} best score; n_clusters={best_score_idx}')
+        plot_voronoi_diagram(X, None, kmeans.fit_predict(X), f'{dataset_name} dataset; best score; n_clusters={best_score_idx}')
         kmeans = KMeans(n_clusters=worst_score_idx, random_state=1, n_init="auto")
-        plot_voronoi_diagram(X, None, kmeans.fit_predict(X), f'{dataset_name} worst score; n_clusters={worst_score_idx}')
+        plot_voronoi_diagram(X, None, kmeans.fit_predict(X), f'{dataset_name} dataset; worst score; n_clusters={worst_score_idx}')
 
 
 def experiment_one_kmeans():
@@ -193,8 +197,8 @@ def analyze_kmeans_classifier(X, y, dataset_name):
             worst_score = avg_score
             worst_score_idx = n
 
-    print(f'{dataset_name} best average scores: {best_score} for n_clusters={best_score_idx}')
-    print(f'{dataset_name} worst average scores: {worst_score} for n_clusters={worst_score_idx}')
+    print(f'(Exp 2) {dataset_name} dataset; best average scores: {best_score} for n_clusters={best_score_idx}')
+    print(f'(Exp 2) {dataset_name} dataset; worst average scores: {worst_score} for n_clusters={worst_score_idx}')
 
     plt.plot(np.arange(n_clusters_max), adj_rand_scores, label="adjusted rand score")
     plt.plot(np.arange(n_clusters_max), homogeneity_scores, label="homogeneity score")
@@ -204,16 +208,18 @@ def analyze_kmeans_classifier(X, y, dataset_name):
     plt.plot(np.arange(n_clusters_max), v_measure_15_scores, label="V-measure (beta=1.5)")
     plt.legend()
     plt.xlim([2, n_clusters_max - 1])
-    plt.ylabel('silhouette score')
+    plt.ylabel('scores')
     plt.xlabel('n_clusters')
-    plt.title(f'For {dataset_name} dataset')
+    plt.title(f'Scores for {dataset_name} dataset')
     plt.show()
+    # plt.savefig(f'{dataset_name}_scores.png')
+    # plt.close()
 
     if X.shape[1] == 2:
         kmeans = KMeans(n_clusters=best_score_idx, random_state=1, n_init="auto")
-        plot_voronoi_diagram(X, y, kmeans.fit_predict(X), f'{dataset_name} best score; n_clusters={best_score_idx}')
+        plot_voronoi_diagram(X, y, kmeans.fit_predict(X), f'{dataset_name} dataset; best score; n_clusters={best_score_idx}')
         kmeans = KMeans(n_clusters=worst_score_idx, random_state=1, n_init="auto")
-        plot_voronoi_diagram(X, y, kmeans.fit_predict(X), f'{dataset_name} worst score; n_clusters={worst_score_idx}')
+        plot_voronoi_diagram(X, y, kmeans.fit_predict(X), f'{dataset_name} dataset; worst score; n_clusters={worst_score_idx}')
 
 
 def experiment_two_kmeans():
@@ -225,6 +231,14 @@ def experiment_two_kmeans():
     dataset_2_3 = load_data("./data/2_3.csv")
 
     analyze_kmeans_classifier(dataset_1_1[0], dataset_1_1[1], "1_1")
+    analyze_kmeans_classifier(dataset_1_2[0], dataset_1_2[1], "1_2")
+    analyze_kmeans_classifier(dataset_1_3[0], dataset_1_3[1], "1_3")
+    analyze_kmeans_classifier(dataset_2_1[0], dataset_2_1[1], "2_1")
+    analyze_kmeans_classifier(dataset_2_2[0], dataset_2_2[1], "2_2")
+    analyze_kmeans_classifier(dataset_2_3[0], dataset_2_3[1], "2_3")
 
 
+print("Experiment one")
+experiment_one_kmeans()
+print("Experiment two")
 experiment_two_kmeans()
