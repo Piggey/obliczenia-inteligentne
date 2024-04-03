@@ -20,8 +20,8 @@ def experiment_1(datasets):
 
         y_pred_worst = DBSCAN(worst_eps, min_samples=1).fit_predict(X)
         y_pred_best = DBSCAN(best_eps, min_samples=1).fit_predict(X)
-        plot_voronoi_diagram(X, y_true, y_pred_worst, f'{ds_name}_worst')
-        plot_voronoi_diagram(X, y_true, y_pred_best, f'{ds_name}_best')
+        plot_voronoi_diagram(X, y_true, y_pred_worst, f'{ds_name}_worst_eps:{worst_eps:.2f}')
+        plot_voronoi_diagram(X, y_true, y_pred_best, f'{ds_name}_best_eps:{best_eps:.2f}')
 
 
 def _calculate_silhouette_scores(X, eps_values):
@@ -57,7 +57,7 @@ def _plot_silhouette_scores(name, eps_values, silhouette_scores, cluster_counts)
     plt.title('silhouette score')
     plt.ylabel('silhouette score')
     plt.xlabel('n_clusters')
-    # plt.show()
-    plt.savefig(name)
-    plt.close()
+    plt.show()
+    # plt.savefig(name)
+    # plt.close()
 
