@@ -1,60 +1,63 @@
 import numpy as np
-from sklearn.cluster import DBSCAN 
+from sklearn.cluster import DBSCAN
 from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
-from scipy.spatial import Voronoi, voronoi_plot_2d
+from utils import load_data, plot_voronoi_diagram
 
-def dbs_calculate_silhouette_scores(X, eps_values):
-  silhouette_scores = []
-  cluster_counts = []
-  
-  for eps in eps_values:
-    dbscan = DBSCAN(eps=eps)
-    labels = dbscan.fit_predict(X)
+def experiment_1(datasets):
+    eps_values = np.linspace(0.1, 1.9, 20)
 
-    unique_clusters = len(np.unique(labels))
-    if unique_clusters > 1:
-      silhouette = silhouette_score(X, labels)
-    else:
-      silhouette = 0
+    for dataset in datasets:
+        ds_name = dataset.split("/")[-1]
+        print(f'dataset: {dataset}')
 
-    silhouette_scores.append(silhouette)
-    cluster_counts.append(unique_clusters)
+        X, y_true = load_data(dataset)
 
-  return silhouette_scores, cluster_counts
+        silhouette_scores, cluster_counts, worst_eps, best_eps = _calculate_silhouette_scores(X, eps_values)
+        print(f'best: {best_eps}, worst: {worst_eps}')
 
-def dbs_plot_silhouette_scores(eps_values, silhouette_scores, cluster_counts):
-  plt.figure(figsize=(12, 6))
+        _plot_silhouette_scores(f'{ds_name}_scores.png', eps_values, silhouette_scores, cluster_counts)
 
-  plt.plot(eps_values, silhouette_scores, marker='o', label='Silhouette Score')
-  for eps, score, clusters in zip(eps_values, silhouette_scores, cluster_counts):
-    plt.text(eps, score, str(clusters), fontsize=8, ha='right', va='bottom')
+        y_pred_worst = DBSCAN(worst_eps, min_samples=1).fit_predict(X)
+        y_pred_best = DBSCAN(best_eps, min_samples=1).fit_predict(X)
+        plot_voronoi_diagram(X, y_true, y_pred_worst, f'{ds_name}_worst')
+        plot_voronoi_diagram(X, y_true, y_pred_best, f'{ds_name}_best')
 
-  plt.title('Silhouette Score with Cluster Counts')
-  plt.xlabel('Eps')
-  plt.ylabel('Silhouette Score')
-  plt.grid(True)
-  plt.legend()
 
-  plt.show()
+def _calculate_silhouette_scores(X, eps_values):
+    silhouette_scores = []
+    cluster_counts = []
+    worst_eps = 100000
+    best_eps = -1000000
 
-def dbs_plot_voronoi(X, eps_values, silhouette_scores):
-  best_eps_index = np.argmax(silhouette_scores)
-  worst_eps_index = np.argmin(silhouette_scores)
+    for eps in eps_values:
+        dbscan = DBSCAN(eps, min_samples=1)
+        y_pred = dbscan.fit_predict(X)
 
-  # Wizualizacja klastrów dla najlepszego przypadku
-  _, axs = plt.subplots(1, 2, figsize=(15, 5))
-  _plot_voronoi(X, DBSCAN(eps=eps_values[best_eps_index]).fit_predict(X), ax=axs[0])
-  axs[0].set_title(f'Best Case - Eps: {eps_values[best_eps_index]}')
-  
-  # Wizualizacja klastrów dla najgorszego przypadku
-  _plot_voronoi(X, DBSCAN(eps=eps_values[worst_eps_index]).fit_predict(X), ax=axs[1])
-  axs[1].set_title(f'Worst Case - Eps: {eps_values[worst_eps_index]}')
-  
-  plt.show()
+        clusters_count = len(np.unique(y_pred))
+        cluster_counts.append(clusters_count)
 
-def _plot_voronoi(X, labels, ax):
-  vor = Voronoi(X)
-  voronoi_plot_2d(vor, show_vertices=False, ax=ax)
-  for label in np.unique(labels):
-    ax.scatter(X[labels == label][:, 0], X[labels == label][:, 1])
+        score = silhouette_score(X, y_pred) if clusters_count > 1 else 0
+        silhouette_scores.append(score)
+
+        if score == max(silhouette_scores):
+            best_eps = eps
+        if score == min(silhouette_scores):
+            worst_eps = eps
+        print(f'eps: {eps}, silhouette_score: {score}')
+
+    return silhouette_scores, cluster_counts, worst_eps, best_eps
+
+
+def _plot_silhouette_scores(name, eps_values, silhouette_scores, cluster_counts):
+    plt.plot(eps_values, silhouette_scores)
+    for eps, score, clusters in zip(eps_values, silhouette_scores, cluster_counts):
+        plt.text(eps, score, str(clusters), fontsize=8, ha='right')
+
+    plt.title('silhouette score')
+    plt.ylabel('silhouette score')
+    plt.xlabel('n_clusters')
+    # plt.show()
+    plt.savefig(name)
+    plt.close()
+
