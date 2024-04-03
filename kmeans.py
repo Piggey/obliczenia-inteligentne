@@ -1,4 +1,3 @@
-from main import load_data
 from sklearn.datasets import load_iris, load_wine, load_breast_cancer
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score, adjusted_rand_score, homogeneity_score, completeness_score, \
@@ -7,7 +6,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils import plot_voronoi_diagram
+from utils import plot_voronoi_diagram, load_data
 
 n_clusters_max = 10
 
@@ -70,9 +69,6 @@ def analyze_kmeans_silhouette_score(X, y, dataset_name):
 
 def experiment_one_kmeans():
     # load Iris, Wine, Breast datasets from Scikit, and artificial datasets from CSV
-    # dataset_iris = load_iris(return_X_y=True)
-    # dataset_wine = load_wine(return_X_y=True)
-    # dataset_breast_cancer = load_breast_cancer(return_X_y=True)
     dataset_1_1 = load_data("./data/1_1.csv")
     dataset_1_2 = load_data("./data/1_2.csv")
     dataset_1_3 = load_data("./data/1_3.csv")
@@ -81,9 +77,6 @@ def experiment_one_kmeans():
     dataset_2_3 = load_data("./data/2_3.csv")
 
     # silhouette score for all datasets, voronoi for 2D
-    # analyze_kmeans_silhouette_score(dataset_iris[0], dataset_iris[1], "iris")
-    # analyze_kmeans_silhouette_score(dataset_wine[0], dataset_wine[1], "wine")
-    # analyze_kmeans_silhouette_score(dataset_breast_cancer[0], dataset_breast_cancer[1], "breast cancer")
     analyze_kmeans_silhouette_score(dataset_1_1[0], dataset_1_1[1], "1_1")
     analyze_kmeans_silhouette_score(dataset_1_2[0], dataset_1_2[1], "1_2")
     analyze_kmeans_silhouette_score(dataset_1_3[0], dataset_1_3[1], "1_3")
@@ -178,7 +171,34 @@ def experiment_two_kmeans():
     analyze_kmeans_classifier(dataset_2_3[0], dataset_2_3[1], "2_3")
 
 
+def experiment_real_data_analysis():
+    dataset_iris = load_iris(return_X_y=True)
+    dataset_wine = load_wine(return_X_y=True)
+    dataset_breast_cancer = load_breast_cancer(return_X_y=True)
+
+    analyze_kmeans_silhouette_score(dataset_iris[0], dataset_iris[1], "iris")
+    analyze_kmeans_silhouette_score(dataset_wine[0], dataset_wine[1], "wine")
+    analyze_kmeans_silhouette_score(dataset_breast_cancer[0], dataset_breast_cancer[1], "breast cancer")
+
+    analyze_kmeans_classifier(dataset_iris[0], dataset_iris[1], "iris")
+    analyze_kmeans_classifier(dataset_wine[0], dataset_wine[1], "wine")
+    analyze_kmeans_classifier(dataset_breast_cancer[0], dataset_breast_cancer[1], "breast cancer")
+
+    # Iris dataset columns: Sepal Length, Sepal Width, Petal Length and Petal Width
+    plt.scatter(dataset_iris[0][:, 2], dataset_iris[0][:, 3], c=dataset_iris[1])
+    plt.xlabel("Petal Length")
+    plt.ylabel("Petal Width")
+    plt.show()
+
+    plt.scatter(dataset_iris[0][:, 0], dataset_iris[0][:, 3], c=dataset_iris[1])
+    plt.xlabel("Sepal Length")
+    plt.ylabel("Petal Width")
+    plt.show()
+
+
 print("Experiment one")
 experiment_one_kmeans()
 print("Experiment two")
 experiment_two_kmeans()
+print("Analyze on real data")
+experiment_real_data_analysis()
