@@ -79,6 +79,46 @@ def experiment_2(datasets):
         plot_voronoi_diagram(X, y_true, y_pred_worst, f'{ds_name}_worst_eps:{worst_eps:.2f}')
         plot_voronoi_diagram(X, y_true, y_pred_best, f'{ds_name}_best_eps:{best_eps:.2f}')
 
+def experiment_1_rd(name, X, y_true, eps_values):
+    print(f'unique real labels: {len(np.unique(y_true))}')
+    silhouette_scores, cluster_counts, worst_eps, best_eps = _calculate_silhouette_scores(X, eps_values)
+    print(f'best: {best_eps}, worst: {worst_eps}')
+
+    _plot_silhouette_scores(name, eps_values, silhouette_scores, cluster_counts)
+
+def experiment_2_rd(name, X, y_true, eps_values):
+    adjusted_rand_scores = []
+    homogeneity_scores = []
+    completeness_scores = []
+    v_measure_scores_05 = []
+    v_measure_scores_10 = []
+    v_measure_scores_20 = []
+
+    cluster_counts = []
+
+    for eps in eps_values:
+        dbscan = DBSCAN(eps, min_samples=1)
+        y_pred = dbscan.fit_predict(X)
+
+        clusters_count = len(np.unique(y_pred))
+        cluster_counts.append(clusters_count)
+        
+        ars = adjusted_rand_score(y_true, y_pred)
+        hgs = homogeneity_score(y_true, y_pred)
+        cs = completeness_score(y_true, y_pred)
+        vm05 = v_measure_score(y_true, y_pred, beta=0.5)
+        vm10 = v_measure_score(y_true, y_pred, beta=1.0)
+        vm20 = v_measure_score(y_true, y_pred, beta=2.0)
+        print(f'ars: {ars}, hgs: {hgs}, cs: {cs}, vm(0.5, 1.0, 2.0): ({vm05}, {vm10}, {vm20})')
+
+        adjusted_rand_scores.append(ars)
+        homogeneity_scores.append(hgs)
+        completeness_scores.append(cs)
+        v_measure_scores_05.append(vm05)
+        v_measure_scores_10.append(vm10)
+        v_measure_scores_20.append(vm20)
+
+    _plot_classifier_scores(name, eps_values, cluster_counts, adjusted_rand_scores, homogeneity_scores, completeness_scores, v_measure_scores_05, v_measure_scores_10, v_measure_scores_20)
 
 def _plot_classifier_scores(name, eps_values, cluster_counts, adjusted_rand_scores, homogeneity_scores, completeness_scores, v_measure_scores_05, v_measure_scores_10, v_measure_scores_20):
     plt.plot(eps_values, adjusted_rand_scores, label='Adjusted Rand Score')
@@ -112,7 +152,7 @@ def _calculate_silhouette_scores(X, eps_values):
         clusters_count = len(np.unique(y_pred))
         cluster_counts.append(clusters_count)
 
-        score = silhouette_score(X, y_pred) if clusters_count > 1 else 0
+        score = silhouette_score(X, y_pred) if clusters_count > 1 and clusters_count < len(X) - 1 else 0
         silhouette_scores.append(score)
 
         if score == max(silhouette_scores):
@@ -123,16 +163,14 @@ def _calculate_silhouette_scores(X, eps_values):
 
     return silhouette_scores, cluster_counts, worst_eps, best_eps
 
-
 def _plot_silhouette_scores(name, eps_values, silhouette_scores, cluster_counts):
     plt.plot(eps_values, silhouette_scores)
     for eps, score, clusters in zip(eps_values, silhouette_scores, cluster_counts):
         plt.text(eps, score, str(clusters), fontsize=8, ha='right')
 
-    plt.title('silhouette score')
+    plt.title(name)
     plt.ylabel('silhouette score')
     plt.xlabel('eps')
     # plt.show()
-    plt.savefig(name)
+    plt.savefig(f'{name}.png')
     plt.close()
-
