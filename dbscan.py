@@ -72,7 +72,7 @@ def experiment_2(datasets):
             v_measure_scores_20.append(vm20)
 
         print(f'best_eps: {best_eps}, worst_eps: {worst_eps}')
-        _plot_classifier_scores(f'{ds_name}_scores.png', EPS_VALUES, adjusted_rand_scores, homogeneity_scores, completeness_scores, v_measure_scores_05, v_measure_scores_10, v_measure_scores_20)
+        _plot_classifier_scores(f'{ds_name}_scores.png', EPS_VALUES, cluster_counts, adjusted_rand_scores, homogeneity_scores, completeness_scores, v_measure_scores_05, v_measure_scores_10, v_measure_scores_20)
 
         y_pred_worst = DBSCAN(worst_eps, min_samples=1).fit_predict(X)
         y_pred_best = DBSCAN(best_eps, min_samples=1).fit_predict(X)
@@ -80,13 +80,17 @@ def experiment_2(datasets):
         plot_voronoi_diagram(X, y_true, y_pred_best, f'{ds_name}_best_eps:{best_eps:.2f}')
 
 
-def _plot_classifier_scores(name, eps_values, adjusted_rand_scores, homogeneity_scores, completeness_scores, v_measure_scores_05, v_measure_scores_10, v_measure_scores_20):
+def _plot_classifier_scores(name, eps_values, cluster_counts, adjusted_rand_scores, homogeneity_scores, completeness_scores, v_measure_scores_05, v_measure_scores_10, v_measure_scores_20):
     plt.plot(eps_values, adjusted_rand_scores, label='Adjusted Rand Score')
     plt.plot(eps_values, homogeneity_scores, label='Homogeneity Score')
     plt.plot(eps_values, completeness_scores, label='Completeness Score')
     plt.plot(eps_values, v_measure_scores_05, label='V Measure (beta=0.5)')
     plt.plot(eps_values, v_measure_scores_10, label='V Measure (beta=1.0)')
     plt.plot(eps_values, v_measure_scores_20, label='V Measure (beta=2.0)')
+
+    for eps, score, count in zip(eps_values, adjusted_rand_scores, cluster_counts):
+        plt.text(eps, score, str(count), fontsize=12, ha='right')
+
     plt.title('Classifier Scores')
     plt.ylabel('Scores')
     plt.xlabel('Eps')
