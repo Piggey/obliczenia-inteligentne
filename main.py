@@ -14,4 +14,5 @@ if __name__ == '__main__':
   # X, y = load_data(DATASETS[3])
   # plot_voronoi_diagram(X, y, y)
   # plot_silhouette_score(X, y)
-  dbscan.experiment_1(DATASETS)
+  # dbscan.experiment_1(DATASETS)
+  dbscan.experiment_2(DATASETS)
