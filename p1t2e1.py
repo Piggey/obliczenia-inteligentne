@@ -1,11 +1,10 @@
 # project 1; task 2; experiment 1;
 import numpy as np
-from sklearn.neural_network import MLPClassifier
-
+import matplotlib.pyplot as plt
 from utils import load_data
+from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
-import matplotlib.pyplot as plt
 from sklearn.inspection import DecisionBoundaryDisplay
 
 
@@ -33,7 +32,9 @@ def analyze_svm(X, y, dataset_name):
         display.ax_.scatter(X[:, 0], X[:, 1], c=y, edgecolor="k")
         plt.title(
             f'DB plot for SVC; kernel = {kernel}; Highest acc = {round(best_accuracy, 2)}; C = {best_C}; {dataset_name} dataset')
-        plt.show()
+        # plt.show()
+        plt.savefig(f'{dataset_name}_{kernel}_svm.png')
+        plt.close()
 
 
 # plot decision boundary for each dataset, for identity, logistic, tanh and relu activation functions, for n_neurons with best accuracy
@@ -71,8 +72,10 @@ def analyze_mlp(X, y, dataset_name):
         display = DecisionBoundaryDisplay.from_estimator(classifier, X, response_method="predict", alpha=0.5)
         display.ax_.scatter(X[:, 0], X[:, 1], c=y, edgecolor="k")
         plt.title(
-            f'DB plot for MLP; activation = {activation}; Highest acc = {round(best_accuracy, 2)}; n_neurons = {best_n_neurons}; {dataset_name} dataset')
-        plt.show()
+            f'DB plot for MLP; act = {activation}; Highest acc = {round(best_accuracy, 2)}; n_neu = {best_n_neurons}; {dataset_name} dataset')
+        # plt.show()
+        plt.savefig(f'{dataset_name}_{activation}_mlp.png')
+        plt.close()
 
 
 def experiment_one():
@@ -81,9 +84,9 @@ def experiment_one():
     dataset_2_2 = load_data("./data/2_2.csv")
     dataset_2_3 = load_data("./data/2_3.csv")
 
-    analyze_svm(dataset_2_1[0], dataset_2_1[1], "2_1")
-    analyze_svm(dataset_2_2[0], dataset_2_2[1], "2_2")
-    analyze_svm(dataset_2_3[0], dataset_2_3[1], "2_3")
+    # analyze_svm(dataset_2_1[0], dataset_2_1[1], "2_1")
+    # analyze_svm(dataset_2_2[0], dataset_2_2[1], "2_2")
+    # analyze_svm(dataset_2_3[0], dataset_2_3[1], "2_3")
 
     # takes a few minutes to run for each dataset
     analyze_mlp(dataset_2_1[0], dataset_2_1[1], "2_1")
