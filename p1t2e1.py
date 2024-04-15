@@ -3,28 +3,35 @@ import numpy as np
 from utils import load_data
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+from sklearn.inspection import DecisionBoundaryDisplay
+
 
 # plot decision boundary for each dataset, for rbf and linear kernel, for C with best accuracy
 def analyze_svm(X, y, dataset_name):
     # find Cs with best accuracy for rbf kernel for each dataset
-    best_C = -1
-    best_accuracy = -1
-    for C in np.arange(0.5, 100, 0.5):
-        classifier = SVC(kernel='rbf', C=C)
+    for kernel in ["rbf", "linear"]:
+        best_C = -1
+        best_accuracy = -1
+        for C in np.arange(0.5, 100, 0.5):
+            classifier = SVC(kernel=kernel, C=C)
+            classifier.fit(X, y)
+            y_pred = classifier.predict(X)
+            accuracy = accuracy_score(y, y_pred)
+
+            if best_accuracy < accuracy:
+                best_accuracy = accuracy
+                best_C = C
+
+        print(f'For dataset {dataset_name} best accuracy = {best_accuracy}; at C = {best_C}')
+
+        classifier = SVC(kernel=kernel, C=best_C)
         classifier.fit(X, y)
-        y_pred = classifier.predict(X)
-        accuracy = accuracy_score(y, y_pred)
-
-        if best_accuracy < accuracy:
-            best_accuracy = accuracy
-            best_C = C
-
-    print(f'For dataset {dataset_name} best accuracy = {best_accuracy}; at C = {best_C}')
-
-    # find Cs with best accuracy for linear kernel for each dataset
-    # plot decision boundary for best Cs
-
-    pass
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X[:, 0], X[:, 1], c=y, edgecolor="k")
+        plt.title(
+            f'DB plot for SVC; kernel = {kernel}; Highest acc = {round(best_accuracy, 2)}; C = {best_C}; {dataset_name} dataset')
+        plt.show()
 
 
 # plot decision boundary for each dataset, for identity, logistic, tanh and relu activation functions, for n_neurons with best accuracy
