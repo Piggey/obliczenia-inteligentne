@@ -100,8 +100,44 @@ def analyze_knn(X_train, X_test, y_train, y_test, dataset_name):
     # plt.savefig(f'{dataset_name}_best_cm.png')
     # plt.close()
 
-def analyze_svm(X, y, dataset_name):
+
+def analyze_svm(X_train, X_test, y_train, y_test, dataset_name):
     # plot accuracy on train and test datasets over changing log(C) parameter
+    analyzed_Cs = np.logspace(-2, 6, num=32, endpoint=True)
+
+    best_C = -1
+    best_accuracy = -1
+
+    scores = []
+
+    for C in analyzed_Cs:
+        classifier = SVC(kernel="rbf", C=C)
+        classifier.fit(X_train, y_train)
+
+        # test over training data
+        y_train_pred = classifier.predict(X_train)
+        accuracy_train = accuracy_score(y_train, y_train_pred)
+
+        # test over testing data
+        y_test_pred = classifier.predict(X_test)
+        accuracy_test = accuracy_score(y_test, y_test_pred)
+
+        scores.append([C, accuracy_test, accuracy_train])
+
+        if best_accuracy < accuracy_test:
+            best_accuracy = accuracy_test
+            best_C = C
+
+    # plot accuracy on train and test datasets over changing n_neighbors parameter
+    scores = np.array(scores)
+    plt.plot(np.log10(scores[:, 0]), scores[:, 1], label="accuracy test")
+    plt.plot(np.log10(scores[:, 0]), scores[:, 2], label="accuracy train")
+    plt.xlabel("log(C)")
+    plt.legend()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_knn_hyperparameters.png')
+    # plt.close()
+    print(f'For dataset {dataset_name} SVM best accuracy = {best_accuracy}; at C = {best_C} or log(C) = {np.log10(best_C)}')
 
     # show decision boundary for smallest, largest and the best C parameter
 
@@ -110,7 +146,7 @@ def analyze_svm(X, y, dataset_name):
     pass
 
 
-def analyze_mlp(X, y, dataset_name):
+def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
     # plot accuracy on train and test datasets over changing hidden layer size
 
     # show decision boundary for smallest, largest and the best hidden layer size
@@ -130,8 +166,11 @@ def experiment_two():
     dataset_2_2 = train_test_split(dataset_2_2[0], dataset_2_2[1], test_size=0.2, random_state=42)
     dataset_2_3 = train_test_split(dataset_2_3[0], dataset_2_3[1], test_size=0.2, random_state=42)
 
-    analyze_knn(dataset_2_2[0], dataset_2_2[1], dataset_2_2[2], dataset_2_2[3], "2_2")
-    analyze_knn(dataset_2_3[0], dataset_2_3[1], dataset_2_3[2], dataset_2_3[3], "2_3")
+    # analyze_knn(dataset_2_2[0], dataset_2_2[1], dataset_2_2[2], dataset_2_2[3], "2_2")
+    # analyze_knn(dataset_2_3[0], dataset_2_3[1], dataset_2_3[2], dataset_2_3[3], "2_3")
+
+    # analyze_svm(dataset_2_2[0], dataset_2_2[1], dataset_2_2[2], dataset_2_2[3], "2_2")
+    analyze_svm(dataset_2_3[0], dataset_2_3[1], dataset_2_3[2], dataset_2_3[3], "2_3")
 
 
 experiment_two()
