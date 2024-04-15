@@ -71,3 +71,20 @@ def plot_voronoi_diagram(X, y_true, y_pred, subtitle=None):
     plt.show()
     # plt.savefig(f'{subtitle}_vor.png')
     # plt.close()
+
+def test_train_line_plot(x, y_train, y_test, title, x_label, y_label, *, show=True, export_filename=None):
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, y_train, label='train')
+    plt.plot(x, y_test, label='test')
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title(title)
+    plt.legend()
+    plt.xticks(x)
+    plt.grid(axis='x')
+
+    if show:
+        plt.show()
+
+    if export_filename is not None:
+        plt.savefig(export_filename)
