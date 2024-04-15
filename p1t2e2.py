@@ -1,13 +1,12 @@
 # project 1; task 2; experiment 2;
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from utils import load_data
-import numpy as np
-from sklearn.metrics import accuracy_score
-from sklearn.svm import SVC
 import matplotlib.pyplot as plt
+import numpy as np
+from utils import load_data
 from sklearn.inspection import DecisionBoundaryDisplay
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 
 def analyze_knn(X_train, X_test, y_train, y_test, dataset_name):
