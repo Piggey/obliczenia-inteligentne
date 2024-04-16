@@ -16,7 +16,7 @@ SVM_C_RANGE = np.logspace(-2, 6, num=32, endpoint=True)
 MLP_HIDDEN_LAYERS_RANGE = np.arange(2, 65, 4)
 
 def experiment_3():
-    dataset_name = 'data/2_3.csv'
+    dataset_name = 'data/2_2.csv'
     X, y_true = load_data(dataset_name)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y_true, 
@@ -25,9 +25,10 @@ def experiment_3():
         random_state=RANDOM_STATE
     )
 
-    # analyze_knn(KNN_N_NEIGHBORS_RANGE, X_train, X_test, y_train, y_test, dataset_name)
-    # analyze_svm(SVM_C_RANGE, X_train, X_test, y_train, y_test, dataset_name, kernel='rbf')
+    analyze_knn(KNN_N_NEIGHBORS_RANGE, X_train, X_test, y_train, y_test, dataset_name)
+    analyze_svm(SVM_C_RANGE, X_train, X_test, y_train, y_test, dataset_name, kernel='rbf')
     analyze_mlp(MLP_HIDDEN_LAYERS_RANGE, X_train, X_test, y_train, y_test, dataset_name, random_state=RANDOM_STATE)
+
 
 def analyze_knn(n_neighbors_range, X_train, X_test, y_train, y_test, dataset_name):
     best_n_neighbors = -1
@@ -56,22 +57,22 @@ def analyze_knn(n_neighbors_range, X_train, X_test, y_train, y_test, dataset_nam
 
     print(f'{dataset_name=}, {best_accuracy=}, {best_n_neighbors=}')
 
-    plot_accuracy_scores(scores, title='KNN', x_label='n_neighbors')
+    plot_accuracy_scores(scores, title='KNN', x_label='n_neighbors', show=False, export_filename=f'{dataset_name}-knn-accuracy.png')
 
     # smallest
     knn_classifier = KNeighborsClassifier(n_neighbors=1).fit(X_train, y_train)
-    plot_decision_boundary(knn_classifier, X_test, y_test, title='KNN: decision boundary, n_neighbors=1')
-    plot_confusion_matrix(y_test, knn_classifier.predict(X_test), knn_classifier.classes_, title='KNN: confusion matrix, n_neighbors=1')
+    plot_decision_boundary(knn_classifier, X_test, y_test, title='KNN: decision boundary, n_neighbors=1', show=False, export_filename=f'{dataset_name}-knn-decision-boundary-smallest.png')
+    plot_confusion_matrix(y_test, knn_classifier.predict(X_test), knn_classifier.classes_, title='KNN: confusion matrix, n_neighbors=1', show=False, export_filename=f'{dataset_name}-knn-confusion-matrix-smallest.png')
 
     # largest
     knn_classifier = KNeighborsClassifier(n_neighbors=14).fit(X_train, y_train)
-    plot_decision_boundary(knn_classifier, X_test, y_test, title='KNN: decision boundary, n_neighbors=14')
-    plot_confusion_matrix(y_test, knn_classifier.predict(X_test), knn_classifier.classes_, title='KNN: confusion matrix, n_neighbors=14')
+    plot_decision_boundary(knn_classifier, X_test, y_test, title='KNN: decision boundary, n_neighbors=14', show=False, export_filename=f'{dataset_name}-knn-decision-boundary-biggest.png')
+    plot_confusion_matrix(y_test, knn_classifier.predict(X_test), knn_classifier.classes_, title='KNN: confusion matrix, n_neighbors=14', show=False, export_filename=f'{dataset_name}-knn-confusion-matrix-biggest.png')
 
     # best
     knn_classifier = KNeighborsClassifier(n_neighbors=best_n_neighbors).fit(X_train, y_train)
-    plot_decision_boundary(knn_classifier, X_test, y_test, title=f'KNN: decision boundary, n_neighbors={best_n_neighbors}')
-    plot_confusion_matrix(y_test, knn_classifier.predict(X_test), knn_classifier.classes_, title=f'KNN: confusion matrix, n_neighbors={best_n_neighbors}')
+    plot_decision_boundary(knn_classifier, X_test, y_test, title=f'KNN: decision boundary, n_neighbors={best_n_neighbors}', show=False, export_filename=f'{dataset_name}-knn-decision-boundary-best.png')
+    plot_confusion_matrix(y_test, knn_classifier.predict(X_test), knn_classifier.classes_, title=f'KNN: confusion matrix, n_neighbors={best_n_neighbors}', show=False, export_filename=f'{dataset_name}-knn-confusion-matrix-best.png')
 
 def analyze_svm(c_range, X_train, X_test, y_train, y_test, dataset_name, *, kernel='rbf'):
     best_C = -1
@@ -98,23 +99,23 @@ def analyze_svm(c_range, X_train, X_test, y_train, y_test, dataset_name, *, kern
             best_accuracy = accuracy_test
             best_C = C
 
-    plot_accuracy_scores(scores, title='SVM', x_label='log(C)')
+    plot_accuracy_scores(scores, title='SVM', x_label='log(C)', show=False, export_filename=f'{dataset_name}-svm-accuracy.png')
     print(f'{dataset_name=}, {best_accuracy=}, {np.log10(best_C)=}')
 
     # smallest
     svc_classifier = SVC(kernel=kernel, C=c_range[0]).fit(X_train, y_train)
-    plot_decision_boundary(svc_classifier, X_test, y_test, title=f'SVM: decision boundary, C={np.log10(c_range[0])}')
-    plot_confusion_matrix(y_test, svc_classifier.predict(X_test), labels=svc_classifier.classes_, title=f'SVM: confusion matrix, C={np.log10(c_range[0])}')
+    plot_decision_boundary(svc_classifier, X_test, y_test, title=f'SVM: decision boundary, C={np.log10(c_range[0])}', show=False, export_filename=f'{dataset_name}-svm-decision-boundary-smallest.png')
+    plot_confusion_matrix(y_test, svc_classifier.predict(X_test), labels=svc_classifier.classes_, title=f'SVM: confusion matrix, C={np.log10(c_range[0])}', show=False, export_filename=f'{dataset_name}-svm-confusion-matrix-smallest.png')
 
     # largest
     svc_classifier = SVC(kernel=kernel, C=c_range[-1]).fit(X_train, y_train)
-    plot_decision_boundary(svc_classifier, X_test, y_test, title=f'SVM: decision boundary, C={np.log10(c_range[-1])}')
-    plot_confusion_matrix(y_test, svc_classifier.predict(X_test), labels=svc_classifier.classes_, title=f'SVM: confusion matrix, C={np.log10(c_range[-1])}')
+    plot_decision_boundary(svc_classifier, X_test, y_test, title=f'SVM: decision boundary, C={np.log10(c_range[-1])}', show=False, export_filename=f'{dataset_name}-svm-decision-boundary-biggest.png')
+    plot_confusion_matrix(y_test, svc_classifier.predict(X_test), labels=svc_classifier.classes_, title=f'SVM: confusion matrix, C={np.log10(c_range[-1])}', show=False, export_filename=f'{dataset_name}-svm-confusion-matrix-biggest.png')
 
     # best
     svc_classifier = SVC(kernel=kernel, C=best_C).fit(X_train, y_train)
-    plot_decision_boundary(svc_classifier, X_test, y_test, title=f'SVM: decision boundary, C={np.log10(best_C)}')
-    plot_confusion_matrix(y_test, svc_classifier.predict(X_test), labels=svc_classifier.classes_, title=f'SVM: confusion matrix, C={np.log10(best_C)}')
+    plot_decision_boundary(svc_classifier, X_test, y_test, title=f'SVM: decision boundary, C={np.log10(best_C)}', show=False, export_filename=f'{dataset_name}-svm-decision-boundary-best.png')
+    plot_confusion_matrix(y_test, svc_classifier.predict(X_test), labels=svc_classifier.classes_, title=f'SVM: confusion matrix, C={np.log10(best_C)}', show=False, export_filename=f'{dataset_name}-svm-confusion-matrix-best.png')
 
 def analyze_mlp(hidden_layers_range, X_train, X_test, y_train, y_test, dataset_name, *, solver='sgd', activation='relu', random_state=42):
     best_hls = -1
@@ -149,7 +150,7 @@ def analyze_mlp(hidden_layers_range, X_train, X_test, y_train, y_test, dataset_n
             best_accuracy = accuracy_test
             best_hls = hls
 
-    plot_accuracy_scores(scores, title='MLP', x_label='hidden_layer_sizes')
+    plot_accuracy_scores(scores, title='MLP', x_label='hidden_layer_sizes', show=False, export_filename=f'{dataset_name}-mlp-accuracy.png')
     print(f'{dataset_name=}, {best_accuracy=}, {best_hls=}')
 
     # smallest
@@ -162,8 +163,8 @@ def analyze_mlp(hidden_layers_range, X_train, X_test, y_train, y_test, dataset_n
         tol=0,
         hidden_layer_sizes=hidden_layers_range[0]
     ).fit(X_train, y_train)
-    plot_decision_boundary(mlp_classifier, X_test, y_test, title=f'MLP: decision boundary, hidden_layer_sizes={hidden_layers_range[0]}')
-    plot_confusion_matrix(y_test, mlp_classifier.predict(X_test), mlp_classifier.classes_, title=f'MLP: confusion matrix, hidden_layer_sizes={hidden_layers_range[0]}')
+    plot_decision_boundary(mlp_classifier, X_test, y_test, title=f'MLP: decision boundary, hidden_layer_sizes={hidden_layers_range[0]}', show=False, export_filename=f'{dataset_name}-mlp-decision-boundary-smallest.png')
+    plot_confusion_matrix(y_test, mlp_classifier.predict(X_test), mlp_classifier.classes_, title=f'MLP: confusion matrix, hidden_layer_sizes={hidden_layers_range[0]}', show=False, export_filename=f'{dataset_name}-mlp-confusion-matrix-smallest.png')
 
     # largest
     mlp_classifier = MLPClassifier(
@@ -175,8 +176,8 @@ def analyze_mlp(hidden_layers_range, X_train, X_test, y_train, y_test, dataset_n
         tol=0,
         hidden_layer_sizes=hidden_layers_range[-1]
     ).fit(X_train, y_train)
-    plot_decision_boundary(mlp_classifier, X_test, y_test, title=f'MLP: decision boundary, hidden_layer_sizes={hidden_layers_range[-1]}')
-    plot_confusion_matrix(y_test, mlp_classifier.predict(X_test), mlp_classifier.classes_, title=f'MLP: confusion matrix, hidden_layer_sizes={hidden_layers_range[-1]}')
+    plot_decision_boundary(mlp_classifier, X_test, y_test, title=f'MLP: decision boundary, hidden_layer_sizes={hidden_layers_range[-1]}', show=False, export_filename=f'{dataset_name}-mlp-decision-boundary-biggest.png')
+    plot_confusion_matrix(y_test, mlp_classifier.predict(X_test), mlp_classifier.classes_, title=f'MLP: confusion matrix, hidden_layer_sizes={hidden_layers_range[-1]}', show=False, export_filename=f'{dataset_name}-mlp-confusion-matrix-biggest.png')
 
     # best
     mlp_classifier = MLPClassifier(
@@ -188,8 +189,8 @@ def analyze_mlp(hidden_layers_range, X_train, X_test, y_train, y_test, dataset_n
         tol=0,
         hidden_layer_sizes=best_hls,
     ).fit(X_train, y_train)
-    plot_decision_boundary(mlp_classifier, X_test, y_test, title=f'MLP: decision boundary, hidden_layer_sizes={best_hls}')
-    plot_confusion_matrix(y_test, mlp_classifier.predict(X_test), mlp_classifier.classes_, title=f'MLP: confusion matrix, hidden_layer_sizes={best_hls}')
+    plot_decision_boundary(mlp_classifier, X_test, y_test, title=f'MLP: decision boundary, hidden_layer_sizes={best_hls}', show=False, export_filename=f'{dataset_name}-mlp-decision-boundary-best.png')
+    plot_confusion_matrix(y_test, mlp_classifier.predict(X_test), mlp_classifier.classes_, title=f'MLP: confusion matrix, hidden_layer_sizes={best_hls}', show=False, export_filename=f'{dataset_name}-mlp-confusion-matrix-best.png')
 
 
 experiment_3()
