@@ -2,10 +2,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from utils import load_data
+from sklearn.inspection import DecisionBoundaryDisplay
+from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
-from sklearn.inspection import DecisionBoundaryDisplay
 
 
 # plot decision boundary for each dataset, for rbf and linear kernel, for C with best accuracy
@@ -32,9 +32,9 @@ def analyze_svm(X, y, dataset_name):
         display.ax_.scatter(X[:, 0], X[:, 1], c=y, edgecolor="k")
         plt.title(
             f'DB plot for SVC; kernel = {kernel}; Highest acc = {round(best_accuracy, 2)}; C = {best_C}; {dataset_name} dataset')
-        # plt.show()
-        plt.savefig(f'{dataset_name}_{kernel}_svm.png')
-        plt.close()
+        plt.show()
+        # plt.savefig(f'{dataset_name}_{kernel}_svm.png')
+        # plt.close()
 
 
 # plot decision boundary for each dataset, for identity, logistic, tanh and relu activation functions, for n_neurons with best accuracy
@@ -73,9 +73,9 @@ def analyze_mlp(X, y, dataset_name):
         display.ax_.scatter(X[:, 0], X[:, 1], c=y, edgecolor="k")
         plt.title(
             f'DB plot for MLP; act = {activation}; Highest acc = {round(best_accuracy, 2)}; n_neu = {best_n_neurons}; {dataset_name} dataset')
-        # plt.show()
-        plt.savefig(f'{dataset_name}_{activation}_mlp.png')
-        plt.close()
+        plt.show()
+        # plt.savefig(f'{dataset_name}_{activation}_mlp.png')
+        # plt.close()
 
 
 def experiment_one():
