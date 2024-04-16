@@ -2,6 +2,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas
 from scipy.spatial import Voronoi, voronoi_plot_2d
+from sklearn.inspection import DecisionBoundaryDisplay
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
 def load_data(path):
@@ -88,3 +90,44 @@ def test_train_line_plot(x, y_train, y_test, title, x_label, y_label, *, show=Tr
 
     if export_filename is not None:
         plt.savefig(export_filename)
+
+def plot_accuracy_scores(scores, *, title, x_label, show=True, export_filename=None):
+    scores = np.array(scores)
+    plt.plot(scores[:, 0], scores[:, 1], label="accuracy test")
+    plt.plot(scores[:, 0], scores[:, 2], label="accuracy train")
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.grid(axis='x')
+    plt.legend()
+    
+    if show:
+        plt.show()
+
+    if export_filename:
+        plt.savefig(export_filename)
+        plt.close()
+
+def plot_decision_boundary(classifier, X_test, y_test, *, title, show=True, export_filename=None):
+    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+    plt.title(title)
+
+    if show:
+        plt.show()
+
+    if export_filename:
+        plt.savefig(export_filename)
+        plt.close()
+
+def plot_confusion_matrix(y_true, y_pred, labels, *, title, show=True, export_filename=None):
+    matrix = confusion_matrix(y_true, y_pred, labels=labels)
+    display = ConfusionMatrixDisplay(matrix, display_labels=labels)
+    display.plot()
+    plt.title(title)
+
+    if show:
+        plt.show()
+
+    if export_filename:
+        plt.savefig(export_filename)
+        plt.close()
