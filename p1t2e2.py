@@ -234,9 +234,9 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
     plt.plot(scores[:, 0], scores[:, 2], label="accuracy train")
     plt.xlabel("hidden_layer_size")
     plt.legend()
-    # plt.show()
-    plt.savefig(f'{dataset_name}_knn_hyperparameters.png')
-    plt.close()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_mlp_hyperparameters.png')
+    # plt.close()
     print(f'For dataset {dataset_name} MLP best accuracy = {best_accuracy}; at hidden_layer_size = {best_hls}')
 
     # show decision boundary and confusion matrix for smallest, largest and the best hidden_layer_sizes
@@ -253,17 +253,17 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
     display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
     display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
     plt.title(f'DB plot for MLP smallest hls; hls = {analyzed_hls[0]}; {dataset_name} dataset')
-    # plt.show()
-    plt.savefig(f'{dataset_name}_smallest_db.png')
-    plt.close()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_smallest_db.png')
+    # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
     display.plot()
     plt.title(f'Confusion matrix for MLP smallest hls; hls = {analyzed_hls[0]}; {dataset_name} dataset')
-    # plt.show()
-    plt.savefig(f'{dataset_name}_smallest_cm.png')
-    plt.close()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_smallest_cm.png')
+    # plt.close()
 
     # largest
     classifier = MLPClassifier(solver="sgd",
@@ -278,17 +278,17 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
     display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
     display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
     plt.title(f'DB plot for MLP largest hls; hls = {analyzed_hls[-1]}; {dataset_name} dataset')
-    # plt.show()
-    plt.savefig(f'{dataset_name}_largest_db.png')
-    plt.close()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_largest_db.png')
+    # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
     display.plot()
     plt.title(f'Confusion matrix for MLP largest hls; hls = {analyzed_hls[-1]}; {dataset_name} dataset')
-    # plt.show()
-    plt.savefig(f'{dataset_name}_largest_cm.png')
-    plt.close()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_largest_cm.png')
+    # plt.close()
 
     # best
     classifier = MLPClassifier(solver="sgd",
@@ -303,17 +303,17 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
     display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
     display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
     plt.title(f'DB plot for MLP best hls; hls = {best_hls}; {dataset_name} dataset')
-    # plt.show()
-    plt.savefig(f'{dataset_name}_best_db.png')
-    plt.close()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_best_db.png')
+    # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
     display.plot()
     plt.title(f'Confusion matrix for MLP best hls; hls = {best_hls}; {dataset_name} dataset')
-    # plt.show()
-    plt.savefig(f'{dataset_name}_best_cm.png')
-    plt.close()
+    plt.show()
+    # plt.savefig(f'{dataset_name}_best_cm.png')
+    # plt.close()
 
 
 def experiment_two():
