@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
+from sklearn.datasets import load_iris, load_wine, load_breast_cancer
 
 
 def analyze_knn(X_train, X_test, y_train, y_test, dataset_name):
@@ -49,12 +50,13 @@ def analyze_knn(X_train, X_test, y_train, y_test, dataset_name):
     # smallest
     classifier = KNeighborsClassifier(n_neighbors=1)
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for smallest KNN; n_neighbors = 1; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_smallest_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for smallest KNN; n_neighbors = 1; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_smallest_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -67,12 +69,13 @@ def analyze_knn(X_train, X_test, y_train, y_test, dataset_name):
     # largest
     classifier = KNeighborsClassifier(n_neighbors=14)
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for largest KNN; n_neighbors = 14; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_largest_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for largest KNN; n_neighbors = 14; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_largest_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -85,12 +88,13 @@ def analyze_knn(X_train, X_test, y_train, y_test, dataset_name):
     # best
     classifier = KNeighborsClassifier(n_neighbors=best_n_neighbors)
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for best KNN; n_neighbors = {best_n_neighbors}; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_best_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for best KNN; n_neighbors = {best_n_neighbors}; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_best_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -143,12 +147,13 @@ def analyze_svm(X_train, X_test, y_train, y_test, dataset_name):
     # smallest
     classifier = SVC(kernel="rbf", C=analyzed_Cs[0])
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for SVM smallest C; C = {round(analyzed_Cs[0], 2)}; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_smallest_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for SVM smallest C; C = {round(analyzed_Cs[0], 2)}; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_smallest_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -161,12 +166,13 @@ def analyze_svm(X_train, X_test, y_train, y_test, dataset_name):
     # largest
     classifier = SVC(kernel="rbf", C=analyzed_Cs[-1])
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for SVM largest C; C = {round(analyzed_Cs[-1], 2)}; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_largest_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for SVM largest C; C = {round(analyzed_Cs[-1], 2)}; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_largest_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -179,12 +185,13 @@ def analyze_svm(X_train, X_test, y_train, y_test, dataset_name):
     # best
     classifier = SVC(kernel="rbf", C=best_C)
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for SVM best C; C = {round(best_C, 2)}; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_best_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for SVM best C; C = {round(best_C, 2)}; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_best_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -250,12 +257,13 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
                                hidden_layer_sizes=analyzed_hls[0]
                                )
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for MLP smallest hls; hls = {analyzed_hls[0]}; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_smallest_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for MLP smallest hls; hls = {analyzed_hls[0]}; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_smallest_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -275,12 +283,13 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
                                hidden_layer_sizes=analyzed_hls[-1]
                                )
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for MLP largest hls; hls = {analyzed_hls[-1]}; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_largest_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for MLP largest hls; hls = {analyzed_hls[-1]}; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_largest_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -300,12 +309,13 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
                                hidden_layer_sizes=best_hls
                                )
     classifier.fit(X_train, y_train)
-    display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
-    display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
-    plt.title(f'DB plot for MLP best hls; hls = {best_hls}; {dataset_name} dataset')
-    plt.show()
-    # plt.savefig(f'{dataset_name}_best_db.png')
-    # plt.close()
+    if X_test.shape[1] == 2:
+        display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
+        display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
+        plt.title(f'DB plot for MLP best hls; hls = {best_hls}; {dataset_name} dataset')
+        plt.show()
+        # plt.savefig(f'{dataset_name}_best_db.png')
+        # plt.close()
 
     conf_matrix = confusion_matrix(y_test, classifier.predict(X_test), labels=classifier.classes_)
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=classifier.classes_)
@@ -320,21 +330,36 @@ def experiment_two():
     # load datasets
     dataset_2_2 = load_data("./data/2_2.csv")
     dataset_2_3 = load_data("./data/2_3.csv")
+    dataset_iris = load_iris(return_X_y=True)
+    dataset_wine = load_wine(return_X_y=True)
+    dataset_breast_cancer = load_breast_cancer(return_X_y=True)
 
     # split 0.8 train / 0.2 test
     # [0] -> X_train; [1] -> X_test; [2] -> y_train; [3] -> y_test;
     dataset_2_2 = train_test_split(dataset_2_2[0], dataset_2_2[1], test_size=0.2, random_state=42)
     dataset_2_3 = train_test_split(dataset_2_3[0], dataset_2_3[1], test_size=0.2, random_state=42)
+    dataset_iris = train_test_split(dataset_iris[0], dataset_iris[1], test_size=0.2, random_state=42)
+    dataset_wine = train_test_split(dataset_wine[0], dataset_wine[1], test_size=0.2, random_state=42)
+    dataset_breast_cancer = train_test_split(dataset_breast_cancer[0], dataset_breast_cancer[1], test_size=0.2, random_state=42)
 
     # analyze_knn(dataset_2_2[0], dataset_2_2[1], dataset_2_2[2], dataset_2_2[3], "2_2")
     # analyze_knn(dataset_2_3[0], dataset_2_3[1], dataset_2_3[2], dataset_2_3[3], "2_3")
+    analyze_knn(dataset_iris[0], dataset_iris[1], dataset_iris[2], dataset_iris[3], "iris")
+    analyze_knn(dataset_wine[0], dataset_wine[1], dataset_wine[2], dataset_wine[3], "wine")
+    analyze_knn(dataset_breast_cancer[0], dataset_breast_cancer[1], dataset_breast_cancer[2], dataset_breast_cancer[3], "breast_cancer")
 
     # analyze_svm(dataset_2_2[0], dataset_2_2[1], dataset_2_2[2], dataset_2_2[3], "2_2")
     # analyze_svm(dataset_2_3[0], dataset_2_3[1], dataset_2_3[2], dataset_2_3[3], "2_3")
+    analyze_svm(dataset_iris[0], dataset_iris[1], dataset_iris[2], dataset_iris[3], "iris")
+    analyze_svm(dataset_wine[0], dataset_wine[1], dataset_wine[2], dataset_wine[3], "wine")
+    analyze_svm(dataset_breast_cancer[0], dataset_breast_cancer[1], dataset_breast_cancer[2], dataset_breast_cancer[3], "breast_cancer")
 
     # takes a few minutes to run for each dataset
-    analyze_mlp(dataset_2_2[0], dataset_2_2[1], dataset_2_2[2], dataset_2_2[3], "2_2")
-    analyze_mlp(dataset_2_3[0], dataset_2_3[1], dataset_2_3[2], dataset_2_3[3], "2_3")
+    # analyze_mlp(dataset_2_2[0], dataset_2_2[1], dataset_2_2[2], dataset_2_2[3], "2_2")
+    # analyze_mlp(dataset_2_3[0], dataset_2_3[1], dataset_2_3[2], dataset_2_3[3], "2_3")
+    analyze_mlp(dataset_iris[0], dataset_iris[1], dataset_iris[2], dataset_iris[3], "iris")
+    analyze_mlp(dataset_wine[0], dataset_wine[1], dataset_wine[2], dataset_wine[3], "wine")
+    analyze_mlp(dataset_breast_cancer[0], dataset_breast_cancer[1], dataset_breast_cancer[2], dataset_breast_cancer[3], "breast_cancer")
 
 
 experiment_two()

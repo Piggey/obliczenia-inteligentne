@@ -6,6 +6,7 @@ from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
+from sklearn.datasets import load_iris, load_wine, load_breast_cancer
 
 
 # plot decision boundary for each dataset, for rbf and linear kernel, for C with best accuracy
@@ -83,7 +84,11 @@ def experiment_one():
     dataset_2_1 = load_data("./data/2_1.csv")
     dataset_2_2 = load_data("./data/2_2.csv")
     dataset_2_3 = load_data("./data/2_3.csv")
+    dataset_iris = load_iris(return_X_y=True)
+    dataset_wine = load_wine(return_X_y=True)
+    dataset_breast_cancer = load_breast_cancer(return_X_y=True)
 
+    analyze_svm(dataset_breast_cancer[0], dataset_breast_cancer[1], "breast_cancer")
     # analyze_svm(dataset_2_1[0], dataset_2_1[1], "2_1")
     # analyze_svm(dataset_2_2[0], dataset_2_2[1], "2_2")
     # analyze_svm(dataset_2_3[0], dataset_2_3[1], "2_3")
