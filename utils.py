@@ -91,13 +91,16 @@ def test_train_line_plot(x, y_train, y_test, title, x_label, y_label, *, show=Tr
     if export_filename is not None:
         plt.savefig(export_filename)
 
-def plot_accuracy_scores(scores, *, title, x_label, show=True, export_filename=None):
+def plot_accuracy_scores(scores, *, title, x_label, show=True, export_filename=None, show_grid=True):
     scores = np.array(scores)
     plt.plot(scores[:, 0], scores[:, 1], label="accuracy test")
     plt.plot(scores[:, 0], scores[:, 2], label="accuracy train")
     plt.title(title)
     plt.xlabel(x_label)
-    plt.grid(axis='x')
+
+    if show_grid:
+      plt.grid(axis='x')
+
     plt.legend()
     
     if show:
