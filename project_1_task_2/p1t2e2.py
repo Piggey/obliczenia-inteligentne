@@ -328,8 +328,8 @@ def analyze_mlp(X_train, X_test, y_train, y_test, dataset_name):
 
 def experiment_two():
     # load datasets
-    dataset_2_2 = load_data("./data/2_2.csv")
-    dataset_2_3 = load_data("./data/2_3.csv")
+    dataset_2_2 = load_data("../data/2_2.csv")
+    dataset_2_3 = load_data("../data/2_3.csv")
     dataset_iris = load_iris(return_X_y=True)
     dataset_wine = load_wine(return_X_y=True)
     dataset_breast_cancer = load_breast_cancer(return_X_y=True)

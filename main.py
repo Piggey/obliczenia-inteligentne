@@ -1,6 +1,6 @@
 import numpy as np
-import dbscan
-from sklearn.datasets import load_iris, load_wine, load_breast_cancer
+from project_1_task_1 import dbscan
+from sklearn.datasets import load_breast_cancer
 
 DATASETS = [
   'data/1_1.csv',

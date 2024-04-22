@@ -16,7 +16,7 @@ SVM_C_RANGE = np.logspace(-2, 6, num=32, endpoint=True)
 MLP_HIDDEN_LAYERS_RANGE = np.arange(2, 65, 4)
 
 def experiment_3():
-    dataset_name = 'data/2_2.csv'
+    dataset_name = '../data/2_2.csv'
     X, y_true = load_data(dataset_name)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y_true, 

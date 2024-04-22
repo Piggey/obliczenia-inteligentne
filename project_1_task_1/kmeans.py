@@ -156,12 +156,12 @@ def analyze_kmeans_classifier(X, y, dataset_name):
 
 
 def experiment_two_kmeans():
-    dataset_1_1 = load_data("./data/1_1.csv")
-    dataset_1_2 = load_data("./data/1_2.csv")
-    dataset_1_3 = load_data("./data/1_3.csv")
-    dataset_2_1 = load_data("./data/2_1.csv")
-    dataset_2_2 = load_data("./data/2_2.csv")
-    dataset_2_3 = load_data("./data/2_3.csv")
+    dataset_1_1 = load_data("../data/1_1.csv")
+    dataset_1_2 = load_data("../data/1_2.csv")
+    dataset_1_3 = load_data("../data/1_3.csv")
+    dataset_2_1 = load_data("../data/2_1.csv")
+    dataset_2_2 = load_data("../data/2_2.csv")
+    dataset_2_3 = load_data("../data/2_3.csv")
 
     analyze_kmeans_classifier(dataset_1_1[0], dataset_1_1[1], "1_1")
     analyze_kmeans_classifier(dataset_1_2[0], dataset_1_2[1], "1_2")
