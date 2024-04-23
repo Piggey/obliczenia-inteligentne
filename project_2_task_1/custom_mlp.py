@@ -1,5 +1,6 @@
+import torch
 import torch.nn as nn
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 
 class CustomMLP(nn.Module):
@@ -26,4 +27,21 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data[0][idx], self.data[1][idx]
+
+
+def model_accuracy(model, dataloader):
+    model.eval()
+
+    total_correct = 0
+    total_instances = 0
+
+    #  iterating through batches
+    with torch.no_grad():
+        for inputs, labels in dataloader:
+            classifications = torch.argmax(model(inputs), dim=1)
+            correct_predictions = sum(classifications == labels).item()
+            total_correct += correct_predictions
+            total_instances += len(inputs)
+
+    return round(total_correct / total_instances, 3)
 
