@@ -1,5 +1,7 @@
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn.datasets import load_iris, load_wine, load_breast_cancer
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from torch.utils.data import random_split, DataLoader
 from torchvision import datasets, transforms
 from project_2_task_1.custom_mlp import CustomDataset, CustomMLP, model_accuracy
@@ -7,7 +9,10 @@ import torch
 import torch.optim as optim
 from torch import nn
 from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from matplotlib import cm
 
+from utils import plot_voronoi_diagram
 
 flatten_transform = transforms.Compose([
     transforms.ToTensor(),
@@ -32,22 +37,11 @@ def train_model(model, loss_function, optimizer, epochs, train_dataloader, test_
         print(f"epoch {epoch + 1} finished; accuracy {model_accuracy(model, test_dataloader)}; loss {loss}")
 
 
-def dataloader_to_X_y(dataloader):
-    X = []
-    y = []
-
-    for Xs, ys in dataloader:
-        X.append(Xs)
-        y.append(ys)
-
-    return X, y
-
-
 def pca_2_components_analysis():
     train_mnist = datasets.MNIST('../data', train=True, download=True, transform=flatten_transform)
     test_mnist = datasets.MNIST('../data', train=False, transform=flatten_transform)
-    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=128, shuffle=False)
-    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=128, shuffle=False)
+    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=len(train_mnist), shuffle=False)
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=len(test_mnist), shuffle=False)
 
     # Split train dataset into images and labels, create Principal Component Analysis object, fit and use it
     train_images, train_labels = next(iter(train_mnist_dataloader))
@@ -64,35 +58,122 @@ def pca_2_components_analysis():
     test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=128, shuffle=False)
 
     # Create and train model
-    model = CustomMLP(2, 16, 10)
+    model = CustomMLP(2, 10, 32)
     loss_function = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.005)
+    train_model(model, loss_function, optimizer, 15, train_mnist_dataloader, test_mnist_dataloader)
 
-    train_model(model, loss_function, optimizer, 500, train_mnist_dataloader, test_mnist_dataloader)
+    # Show voronoi for 500 of test data
+    plot_voronoi_diagram(test_images_2d[:500], test_labels[:500], np.argmax(model(test_images_2d).detach().numpy()[:500], axis=1),  "PCA with n_components=2 for 500 examples from test dataset")
+
+    # Plot decision boundary
+    x_min, x_max = test_images_2d[:, 0].min() - 1, test_images_2d[:, 0].max() + 1
+    y_min, y_max = test_images_2d[:, 1].min() - 1, test_images_2d[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1), np.arange(y_min, y_max, 0.1))
+    grid_points = np.c_[xx.ravel(), yy.ravel()]
+    grid_tensor = torch.tensor(grid_points, dtype=torch.float32)
+
+    # Create predictions for each element of grid in decision boundary
+    with torch.no_grad():
+        predictions = np.argmax(model(grid_tensor).detach().numpy(), axis=1)
+
+    # Add dummy points to get labels on the final plot
+    for i in range(10):
+        plt.scatter(-999, -999, alpha=1, label=str(i), cmap=cm.tab10)
+
+    # Add grid as square points because contourf didn't work
+    plt.scatter(xx, yy, c=predictions, alpha=1, cmap=cm.tab10, s=50, marker="s", edgecolor='none')
+    plt.scatter(test_images_2d[:500, 0], test_images_2d[:500, 1], c=test_labels[:500], edgecolors='k', s=20, cmap=cm.tab10)
+    plt.xlim([x_min, x_max])
+    plt.ylim([y_min, y_max])
+    plt.xlabel('x1')
+    plt.ylabel('x2')
+    plt.title('Decision boundary plot for test MNIST dataset reduced using PCA with n_components=2')
+    plt.legend()
+    plt.show()
+
+    # Plot confusion matrix
+    conf_matrix = confusion_matrix(test_labels, np.argmax(model(test_images_2d).detach().numpy(), axis=1), labels=np.unique(test_labels))
+    display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=np.unique(test_labels))
+    display.plot()
+    plt.title(f'Confusion matrix for test MNIST dataset reduced using PCA with n_components=2')
+    plt.show()
+
+
+def lda_n_components_analysis():
+    train_mnist = datasets.MNIST('../data', train=True, download=True, transform=flatten_transform)
+    test_mnist = datasets.MNIST('../data', train=False, transform=flatten_transform)
+    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=len(train_mnist), shuffle=False)
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=len(test_mnist), shuffle=False)
+
+    # Split train dataset into images and labels, create Linear Discriminant Analysis object, fit and use it
+    train_images, train_labels = next(iter(train_mnist_dataloader))
+    lda = LDA()
+    lda.fit(train_images, train_labels)
+    train_images_lda = torch.tensor(lda.transform(train_images.numpy()), dtype=torch.float32)
+    train_mnist_dataset = CustomDataset((train_images_lda, train_labels))
+    train_mnist_dataloader = DataLoader(dataset=train_mnist_dataset, batch_size=128, shuffle=False)
+
+    # Split test dataset into images and labels, apply Linear Discriminant Analysis fitted earlier
+    test_images, test_labels = next(iter(test_mnist_dataloader))
+    test_images_lda = torch.tensor(lda.transform(test_images.numpy()), dtype=torch.float32)
+    test_mnist_dataset = CustomDataset((test_images_lda, test_labels))
+    test_mnist_dataloader = DataLoader(dataset=test_mnist_dataset, batch_size=128, shuffle=False)
+
+    n_features = test_images_lda.shape[1]
+    print(f"N features after LDA = {n_features}")
+
+    # Create and train model
+    model = CustomMLP(test_images_lda.shape[1], 10, 32)
+    loss_function = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.005)
+    train_model(model, loss_function, optimizer, 15, train_mnist_dataloader, test_mnist_dataloader)
+
+    # Plot confusion matrix
+    conf_matrix = confusion_matrix(test_labels, np.argmax(model(test_images_lda).detach().numpy(), axis=1), labels=np.unique(test_labels))
+    display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=np.unique(test_labels))
+    display.plot()
+    plt.title(f'Confusion matrix for test MNIST dataset reduced using LDA with n_features={n_features}')
+    plt.show()
+
+
+def flatten_analysis():
+    train_mnist = datasets.MNIST('../data', train=True, download=True, transform=flatten_transform)
+    test_mnist = datasets.MNIST('../data', train=False, transform=flatten_transform)
+    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=128, shuffle=False)
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=128, shuffle=False)
+
+    # Create and train model
+    model = CustomMLP(784, 10, 32)
+    loss_function = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.05)
+    train_model(model, loss_function, optimizer, 15, train_mnist_dataloader, test_mnist_dataloader)
+
+    # Plot confusion matrix
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=len(test_mnist), shuffle=False)
+    test_images, test_labels = next(iter(test_mnist_dataloader))
+    conf_matrix = confusion_matrix(test_labels, np.argmax(model(test_images).detach().numpy(), axis=1), labels=np.unique(test_labels))
+    display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=np.unique(test_labels))
+    display.plot()
+    plt.title(f'Confusion matrix for test MNIST dataset reduced using PCA with n_components=2')
+    plt.show()
 
 
 def experiment_one():
-    dataset_iris = load_iris(return_X_y=True)
-    dataset_wine = load_wine(return_X_y=True)
-    dataset_breast_cancer = load_breast_cancer(return_X_y=True)
-
-    dataset_iris = CustomDataset(dataset_iris)
-    dataset_wine = CustomDataset(dataset_wine)
-    dataset_breast_cancer = CustomDataset(dataset_breast_cancer)
-
-    train_dataset_iris, test_dataset_iris = random_split(dataset_iris, [0.8, 0.2])
-    train_dataset_wine, test_dataset_wine = random_split(dataset_wine, [0.8, 0.2])
-    train_dataset_breast_cancer, test_dataset_breast_cancer = random_split(dataset_breast_cancer, [0.8, 0.2])
-
     # MNIST ekstrakcja - spłaszczenia do wektora 784 elementów
-
+    flatten_analysis()
 
     # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora 2 elementów (cech) (po jednym sposobie na osobe)
     # Artur
     pca_2_components_analysis()
 
-    # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora z małą liczbą elementów (cech) (po jednym sposobie na osobe)
+    # Dawid
 
+    # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora z małą liczbą elementów (cech) (po jednym sposobie na osobe)
+    # Artur
+    lda_n_components_analysis()
+
+    # Dawid
 
 
 experiment_one()

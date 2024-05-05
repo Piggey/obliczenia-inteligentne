@@ -67,9 +67,22 @@ def plot_voronoi_diagram(X, y_true, y_pred, subtitle=None):
     plt.xlabel('x1')
     plt.ylabel('x2')
 
+    # Add dummy points for legend
+    plt.plot(-999, -999, COLORS[0], marker='o', label="0")
+    plt.plot(-999, -999, COLORS[1], marker='o', label="1")
+    plt.plot(-999, -999, COLORS[2], marker='o', label="2")
+    plt.plot(-999, -999, COLORS[3], marker='o', label="3")
+    plt.plot(-999, -999, COLORS[4], marker='o', label="4")
+    plt.plot(-999, -999, COLORS[5], marker='o', label="5")
+    plt.plot(-999, -999, COLORS[6], marker='o', label="6")
+    plt.plot(-999, -999, COLORS[7], marker='o', label="7")
+    plt.plot(-999, -999, COLORS[8], marker='o', label="8")
+    plt.plot(-999, -999, COLORS[9], marker='o', label="9")
+
     # Set correct scaling (to exclude dummy points)
     plt.xlim([x1_min * SCALE, x1_max * SCALE])
     plt.ylim([x2_min * SCALE, x2_max * SCALE])
+    plt.legend()
     plt.show()
     # plt.savefig(f'{subtitle}_vor.png')
     # plt.close()
