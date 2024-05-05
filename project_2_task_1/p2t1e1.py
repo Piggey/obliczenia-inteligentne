@@ -37,6 +37,28 @@ def train_model(model, loss_function, optimizer, epochs, train_dataloader, test_
         print(f"epoch {epoch + 1} finished; accuracy {model_accuracy(model, test_dataloader)}; loss {loss}")
 
 
+def flatten_analysis():
+    train_mnist = datasets.MNIST('../data', train=True, download=True, transform=flatten_transform)
+    test_mnist = datasets.MNIST('../data', train=False, transform=flatten_transform)
+    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=128, shuffle=False)
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=128, shuffle=False)
+
+    # Create and train model
+    model = CustomMLP(784, 10, 32)
+    loss_function = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.05)
+    train_model(model, loss_function, optimizer, 15, train_mnist_dataloader, test_mnist_dataloader)
+
+    # Plot confusion matrix
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=len(test_mnist), shuffle=False)
+    test_images, test_labels = next(iter(test_mnist_dataloader))
+    conf_matrix = confusion_matrix(test_labels, np.argmax(model(test_images).detach().numpy(), axis=1), labels=np.unique(test_labels))
+    display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=np.unique(test_labels))
+    display.plot()
+    plt.title(f'Confusion matrix for test MNIST dataset reduced using PCA with n_components=2')
+    plt.show()
+
+
 def pca_2_components_analysis():
     train_mnist = datasets.MNIST('../data', train=True, download=True, transform=flatten_transform)
     test_mnist = datasets.MNIST('../data', train=False, transform=flatten_transform)
@@ -137,40 +159,32 @@ def lda_n_components_analysis():
     plt.show()
 
 
-def flatten_analysis():
-    train_mnist = datasets.MNIST('../data', train=True, download=True, transform=flatten_transform)
-    test_mnist = datasets.MNIST('../data', train=False, transform=flatten_transform)
-    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=128, shuffle=False)
-    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=128, shuffle=False)
+def experiment_one():
+    # Visualize MNIST dataset
+    mnist = datasets.MNIST('../data', train=False, transform=transforms.ToTensor())
+    mnist_dataloader = DataLoader(dataset=mnist, batch_size=100, shuffle=False)
+    images, labels = next(iter(mnist_dataloader))
 
-    # Create and train model
-    model = CustomMLP(784, 10, 32)
-    loss_function = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.05)
-    train_model(model, loss_function, optimizer, 15, train_mnist_dataloader, test_mnist_dataloader)
+    fig, axs = plt.subplots(10, 10)
+    for i in range(10):
+        for j in range(10):
+            axs[i, j].imshow(images[i * 10 + j].reshape(28, 28), cmap=cm.gray)
+            axs[i, j].axis('off')
 
-    # Plot confusion matrix
-    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=len(test_mnist), shuffle=False)
-    test_images, test_labels = next(iter(test_mnist_dataloader))
-    conf_matrix = confusion_matrix(test_labels, np.argmax(model(test_images).detach().numpy(), axis=1), labels=np.unique(test_labels))
-    display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=np.unique(test_labels))
-    display.plot()
-    plt.title(f'Confusion matrix for test MNIST dataset reduced using PCA with n_components=2')
+    plt.tight_layout(pad=0.1)
     plt.show()
 
-
-def experiment_one():
     # MNIST ekstrakcja - spłaszczenia do wektora 784 elementów
     flatten_analysis()
 
     # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora 2 elementów (cech) (po jednym sposobie na osobe)
-    # Artur
+    # Artur - Principal Component Analysis
     pca_2_components_analysis()
 
     # Dawid
 
     # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora z małą liczbą elementów (cech) (po jednym sposobie na osobe)
-    # Artur
+    # Artur - Linear Discriminant Analysis (9 cech)
     lda_n_components_analysis()
 
     # Dawid
