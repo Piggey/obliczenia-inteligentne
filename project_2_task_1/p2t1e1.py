@@ -46,7 +46,7 @@ def flatten_analysis():
     # Create and train model
     model = CustomMLP(784, 10, 32)
     loss_function = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.05)
+    optimizer = optim.Adam(model.parameters(), lr=0.005)
     train_model(model, loss_function, optimizer, 15, train_mnist_dataloader, test_mnist_dataloader)
 
     # Plot confusion matrix
@@ -67,7 +67,7 @@ def pca_2_components_analysis():
 
     # Split train dataset into images and labels, create Principal Component Analysis object, fit and use it
     train_images, train_labels = next(iter(train_mnist_dataloader))
-    pca = PCA(n_components=2)
+    pca = PCA(n_components=2, random_state=42)
     pca.fit(train_images.numpy())
     train_images_2d = torch.tensor(pca.transform(train_images.numpy()))
     train_mnist = CustomDataset((train_images_2d, train_labels))
