@@ -4,7 +4,7 @@ from sklearn.datasets import load_iris, load_wine, load_breast_cancer
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from torch.utils.data import random_split, DataLoader
 from torchvision import datasets, transforms
-from project_2_task_1.custom_mlp import CustomDataset, CustomMLP, model_accuracy
+from project_2_task_1.custom_mlp import CustomDataset, CustomMLP, model_accuracy, train_model, flatten_transform
 import torch
 import torch.optim as optim
 from torch import nn
@@ -13,28 +13,6 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from matplotlib import cm
 
 from utils import plot_voronoi_diagram
-
-flatten_transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,)),
-    transforms.Lambda(lambda x: torch.flatten(x)),
-])
-
-
-def train_model(model, loss_function, optimizer, epochs, train_dataloader, test_dataloader):
-    for epoch in range(epochs):
-        model.train()
-        loss = -1
-
-        for batch in train_dataloader:
-            inputs, labels = batch
-            outputs = model(inputs)
-            loss = loss_function(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-        print(f"epoch {epoch + 1} finished; accuracy {model_accuracy(model, test_dataloader)}; loss {loss}")
 
 
 def flatten_analysis():

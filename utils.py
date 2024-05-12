@@ -6,6 +6,7 @@ from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
+
 def load_data(path):
     df = pandas.read_csv(path, delimiter=';', header=0, names=['x', 'y', 'label'])
 
@@ -13,6 +14,7 @@ def load_data(path):
     y_true = df['label'].to_numpy()
 
     return X, y_true
+
 
 def plot_voronoi_diagram(X, y_true, y_pred, subtitle=None):
     SCALE = 1.05
@@ -87,6 +89,7 @@ def plot_voronoi_diagram(X, y_true, y_pred, subtitle=None):
     # plt.savefig(f'{subtitle}_vor.png')
     # plt.close()
 
+
 def test_train_line_plot(x, y_train, y_test, title, x_label, y_label, *, show=True, export_filename=None):
     plt.figure(figsize=(10, 6))
     plt.plot(x, y_train, label='train')
@@ -103,6 +106,7 @@ def test_train_line_plot(x, y_train, y_test, title, x_label, y_label, *, show=Tr
 
     if export_filename is not None:
         plt.savefig(export_filename)
+
 
 def plot_accuracy_scores(scores, *, title, x_label, show=True, export_filename=None, show_grid=True):
     scores = np.array(scores)
@@ -123,6 +127,7 @@ def plot_accuracy_scores(scores, *, title, x_label, show=True, export_filename=N
         plt.savefig(export_filename)
         plt.close()
 
+
 def plot_decision_boundary(classifier, X_test, y_test, *, title, show=True, export_filename=None):
     display = DecisionBoundaryDisplay.from_estimator(classifier, X_test, response_method="predict", alpha=0.5)
     display.ax_.scatter(X_test[:, 0], X_test[:, 1], c=y_test, edgecolor="k")
@@ -134,6 +139,7 @@ def plot_decision_boundary(classifier, X_test, y_test, *, title, show=True, expo
     if export_filename:
         plt.savefig(export_filename)
         plt.close()
+
 
 def plot_confusion_matrix(y_true, y_pred, labels, *, title, show=True, export_filename=None):
     matrix = confusion_matrix(y_true, y_pred, labels=labels)
@@ -147,3 +153,4 @@ def plot_confusion_matrix(y_true, y_pred, labels, *, title, show=True, export_fi
     if export_filename:
         plt.savefig(export_filename)
         plt.close()
+

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms
 
 
 class CustomMLP(nn.Module):
@@ -29,6 +30,22 @@ class CustomDataset(Dataset):
         return self.data[0][idx], self.data[1][idx]
 
 
+def train_model(model, loss_function, optimizer, epochs, train_dataloader, test_dataloader):
+    for epoch in range(epochs):
+        model.train()
+        loss = -1
+
+        for batch in train_dataloader:
+            inputs, labels = batch
+            outputs = model(inputs)
+            loss = loss_function(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+        print(f"epoch {epoch + 1} finished; accuracy {model_accuracy(model, test_dataloader)}; loss {loss}")
+
+
 def model_accuracy(model, dataloader):
     model.eval()
 
@@ -45,3 +62,9 @@ def model_accuracy(model, dataloader):
 
     return round(total_correct / total_instances, 3)
 
+
+flatten_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,)),
+    transforms.Lambda(lambda x: torch.flatten(x)),
+])
