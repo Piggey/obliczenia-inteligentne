@@ -217,28 +217,28 @@ def plot_decision_boundary_from_dataloader(model, dataloader):
 
 def experiment_two():
     train_mnist_flatten_dataloader, test_mnist_flatten_dataloader = prepare_pca_dataloaders()
-    best_mnist_flatten = select_best_model([8, 32, 64, 128, 256, 512], 784, 10, 10, train_mnist_flatten_dataloader, test_mnist_flatten_dataloader, "mnist flatten")
+    best_mnist_flatten = select_best_model([8, 32, 48, 64, 128, 192, 256, 512], 784, 10, 10, train_mnist_flatten_dataloader, test_mnist_flatten_dataloader, "mnist flatten")
     plot_confusion_matrix_from_dataloader(best_mnist_flatten, test_mnist_flatten_dataloader, np.arange(10))
 
     train_mnist_pca_dataloader, test_mnist_pca_dataloader = prepare_pca_dataloaders()
-    best_mnist_pca = select_best_model([2, 8, 16, 32, 48, 64], 2, 10, 1, train_mnist_pca_dataloader, test_mnist_pca_dataloader, "mnist PCA (Artur)")
+    best_mnist_pca = select_best_model([2, 8, 16, 32, 48, 64, 96, 128], 2, 10, 1, train_mnist_pca_dataloader, test_mnist_pca_dataloader, "mnist PCA (Artur)")
     plot_confusion_matrix_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader, np.arange(10))
     plot_decision_boundary_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader)
 
     train_mnist_lda_dataloader, test_mnist_lda_dataloader = prepare_lda_dataloaders()
-    best_mnist_lda = select_best_model([4, 16, 32, 64, 96, 128], 9, 10, 10, train_mnist_lda_dataloader, test_mnist_lda_dataloader, "mnist LDA (Artur)")
+    best_mnist_lda = select_best_model([4, 16, 32, 48, 64, 96, 128, 192], 9, 10, 10, train_mnist_lda_dataloader, test_mnist_lda_dataloader, "mnist LDA (Artur)")
     plot_confusion_matrix_from_dataloader(best_mnist_lda, test_mnist_lda_dataloader, np.arange(10))
 
     train_iris_dataloader, test_iris_dataloader, iris_classes = prepare_iris_data()
-    best_iris = select_best_model([64, 256, 512, 1024, 2048, 4096, 8192, 16384], 4, 3, 100, train_iris_dataloader, test_iris_dataloader, "iris")
+    best_iris = select_best_model([8, 32, 64, 128, 196, 256, 384, 512], 4, 3, 100, train_iris_dataloader, test_iris_dataloader, "iris")
     plot_confusion_matrix_from_dataloader(best_iris, test_iris_dataloader, iris_classes)
 
     train_wine_dataloader, test_wine_dataloader, wine_classes = prepare_wine_data()
-    best_wine = select_best_model([8, 32, 64, 128, 256, 512], 13, 3, 100, train_wine_dataloader, test_wine_dataloader, "wine")
+    best_wine = select_best_model([8, 32, 64, 128, 196, 256, 384, 512], 13, 3, 100, train_wine_dataloader, test_wine_dataloader, "wine")
     plot_confusion_matrix_from_dataloader(best_wine, test_wine_dataloader, wine_classes)
 
     train_breast_cancer_dataloader, test_breast_cancer_dataloader, breast_cancer_classes = prepare_breast_cancer_data()
-    best_breast_cancer = select_best_model([8, 32, 64, 128, 256, 512], 30, 2, 100, train_breast_cancer_dataloader, test_breast_cancer_dataloader, "breast_cancer")
+    best_breast_cancer = select_best_model([4, 8, 32, 64, 128, 256, 384, 512], 30, 2, 100, train_breast_cancer_dataloader, test_breast_cancer_dataloader, "breast_cancer")
     plot_confusion_matrix_from_dataloader(best_breast_cancer, train_breast_cancer_dataloader, breast_cancer_classes)
 
 
