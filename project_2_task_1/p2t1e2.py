@@ -221,7 +221,7 @@ def experiment_two():
     plot_confusion_matrix_from_dataloader(best_mnist_flatten, test_mnist_flatten_dataloader, np.arange(10))
 
     train_mnist_pca_dataloader, test_mnist_pca_dataloader = prepare_pca_dataloaders()
-    best_mnist_pca = select_best_model([2, 8, 16, 32, 48, 64, 96, 128], 2, 10, 1, train_mnist_pca_dataloader, test_mnist_pca_dataloader, "mnist PCA (Artur)")
+    best_mnist_pca = select_best_model([2, 8, 16, 32, 48, 64, 96, 128], 2, 10, 10, train_mnist_pca_dataloader, test_mnist_pca_dataloader, "mnist PCA (Artur)")
     plot_confusion_matrix_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader, np.arange(10))
     plot_decision_boundary_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader)
 
