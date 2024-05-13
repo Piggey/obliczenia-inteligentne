@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt, cm
 from sklearn.datasets import load_iris, load_wine, load_breast_cancer
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, IncrementalPCA
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
-from project_2_task_1.custom_mlp import CustomMLP, model_accuracy, flatten_transform, train_model, CustomDataset
+from custom_mlp import CustomMLP, model_accuracy, flatten_transform, train_model, CustomDataset
 
 
 def select_best_model(hidden_layer_sizes, input_size, output_size, epochs, train_dataloader, test_dataloader, dataset_name):
@@ -81,6 +81,28 @@ def prepare_pca_dataloaders():
     # Split test dataset into images and labels, apply Principal Component Analysis trained earlier
     test_images, test_labels = next(iter(test_mnist_dataloader))
     test_images_2d = torch.tensor(pca.transform(test_images.numpy()))
+    test_mnist = CustomDataset((test_images_2d, test_labels))
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=2048, shuffle=False)
+
+    return train_mnist_dataloader, test_mnist_dataloader
+
+def prepare_ipca_dataloaders(n_components: int):
+    train_mnist = datasets.MNIST('data', train=True, download=True, transform=flatten_transform)
+    test_mnist = datasets.MNIST('data', train=False, transform=flatten_transform)
+    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=len(train_mnist), shuffle=False)
+    test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=len(test_mnist), shuffle=False)
+
+    # Split train dataset into images and labels, create Principal Component Analysis object, fit and use it
+    train_images, train_labels = next(iter(train_mnist_dataloader))
+    ipca = IncrementalPCA(n_components=n_components)
+    ipca.fit(train_images.numpy())
+    train_images_2d = torch.tensor(ipca.transform(train_images.numpy()), dtype=torch.float32)
+    train_mnist = CustomDataset((train_images_2d, train_labels))
+    train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=2048, shuffle=False)
+
+    # Split test dataset into images and labels, apply Principal Component Analysis trained earlier
+    test_images, test_labels = next(iter(test_mnist_dataloader))
+    test_images_2d = torch.tensor(ipca.transform(test_images.numpy()), dtype=torch.float32)
     test_mnist = CustomDataset((test_images_2d, test_labels))
     test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=2048, shuffle=False)
 
@@ -216,30 +238,39 @@ def plot_decision_boundary_from_dataloader(model, dataloader):
 
 
 def experiment_two():
-    train_mnist_flatten_dataloader, test_mnist_flatten_dataloader = prepare_flatten_dataloaders()
-    best_mnist_flatten = select_best_model([8, 32, 48, 64, 128, 192, 256, 512], 784, 10, 10, train_mnist_flatten_dataloader, test_mnist_flatten_dataloader, "mnist flatten")
-    plot_confusion_matrix_from_dataloader(best_mnist_flatten, test_mnist_flatten_dataloader, np.arange(10))
+    # train_mnist_flatten_dataloader, test_mnist_flatten_dataloader = prepare_flatten_dataloaders()
+    # best_mnist_flatten = select_best_model([8, 32, 48, 64, 128, 192, 256, 512], 784, 10, 10, train_mnist_flatten_dataloader, test_mnist_flatten_dataloader, "mnist flatten")
+    # plot_confusion_matrix_from_dataloader(best_mnist_flatten, test_mnist_flatten_dataloader, np.arange(10))
 
-    train_mnist_pca_dataloader, test_mnist_pca_dataloader = prepare_pca_dataloaders()
-    best_mnist_pca = select_best_model([2, 8, 16, 32, 48, 64, 96, 128], 2, 10, 10, train_mnist_pca_dataloader, test_mnist_pca_dataloader, "mnist PCA (Artur)")
-    plot_confusion_matrix_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader, np.arange(10))
-    plot_decision_boundary_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader)
+    # train_mnist_pca_dataloader, test_mnist_pca_dataloader = prepare_pca_dataloaders()
+    # best_mnist_pca = select_best_model([2, 8, 16, 32, 48, 64, 96, 128], 2, 10, 10, train_mnist_pca_dataloader, test_mnist_pca_dataloader, "mnist PCA (Artur)")
+    # plot_confusion_matrix_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader, np.arange(10))
+    # plot_decision_boundary_from_dataloader(best_mnist_pca, test_mnist_pca_dataloader)
 
-    train_mnist_lda_dataloader, test_mnist_lda_dataloader = prepare_lda_dataloaders()
-    best_mnist_lda = select_best_model([4, 16, 32, 48, 64, 96, 128, 192], 9, 10, 10, train_mnist_lda_dataloader, test_mnist_lda_dataloader, "mnist LDA (Artur)")
-    plot_confusion_matrix_from_dataloader(best_mnist_lda, test_mnist_lda_dataloader, np.arange(10))
+    # train_mnist_lda_dataloader, test_mnist_lda_dataloader = prepare_lda_dataloaders()
+    # best_mnist_lda = select_best_model([4, 16, 32, 48, 64, 96, 128, 192], 9, 10, 10, train_mnist_lda_dataloader, test_mnist_lda_dataloader, "mnist LDA (Artur)")
+    # plot_confusion_matrix_from_dataloader(best_mnist_lda, test_mnist_lda_dataloader, np.arange(10))
 
-    train_iris_dataloader, test_iris_dataloader, iris_classes = prepare_iris_data()
-    best_iris = select_best_model([8, 32, 64, 128, 196, 256, 384, 512], 4, 3, 100, train_iris_dataloader, test_iris_dataloader, "iris")
-    plot_confusion_matrix_from_dataloader(best_iris, test_iris_dataloader, iris_classes)
+    # train_mnist_ipca_2_dataloader, test_mnist_ipca_2_dataloader = prepare_ipca_dataloaders(2)
+    # best_mnist_ipca = select_best_model([2, 8, 16, 32, 48, 64, 96, 128], 2, 10, 10, train_mnist_ipca_2_dataloader, test_mnist_ipca_2_dataloader, 'mnist IncrementalPCA (n_components=2) (Dawid)')
+    # plot_confusion_matrix_from_dataloader(best_mnist_ipca, test_mnist_ipca_2_dataloader, np.arange(10))
+    # plot_decision_boundary_from_dataloader(best_mnist_ipca, test_mnist_ipca_2_dataloader)
 
-    train_wine_dataloader, test_wine_dataloader, wine_classes = prepare_wine_data()
-    best_wine = select_best_model([8, 32, 64, 128, 196, 256, 384, 512], 13, 3, 100, train_wine_dataloader, test_wine_dataloader, "wine")
-    plot_confusion_matrix_from_dataloader(best_wine, test_wine_dataloader, wine_classes)
+    train_mnist_ipca_n_dataloader, test_mnist_ipca_n_dataloader = prepare_ipca_dataloaders(28)
+    best_mnist_ipca = select_best_model([4, 16, 32, 48, 64, 96, 128, 192], 28, 10, 10, train_mnist_ipca_n_dataloader, test_mnist_ipca_n_dataloader, 'mnist IncrementalPCA (n_components=28) (Dawid)')
+    plot_confusion_matrix_from_dataloader(best_mnist_ipca, test_mnist_ipca_n_dataloader, np.arange(10))
 
-    train_breast_cancer_dataloader, test_breast_cancer_dataloader, breast_cancer_classes = prepare_breast_cancer_data()
-    best_breast_cancer = select_best_model([4, 8, 32, 64, 128, 256, 384, 512], 30, 2, 100, train_breast_cancer_dataloader, test_breast_cancer_dataloader, "breast_cancer")
-    plot_confusion_matrix_from_dataloader(best_breast_cancer, train_breast_cancer_dataloader, breast_cancer_classes)
+    # train_iris_dataloader, test_iris_dataloader, iris_classes = prepare_iris_data()
+    # best_iris = select_best_model([8, 32, 64, 128, 196, 256, 384, 512], 4, 3, 100, train_iris_dataloader, test_iris_dataloader, "iris")
+    # plot_confusion_matrix_from_dataloader(best_iris, test_iris_dataloader, iris_classes)
+
+    # train_wine_dataloader, test_wine_dataloader, wine_classes = prepare_wine_data()
+    # best_wine = select_best_model([8, 32, 64, 128, 196, 256, 384, 512], 13, 3, 100, train_wine_dataloader, test_wine_dataloader, "wine")
+    # plot_confusion_matrix_from_dataloader(best_wine, test_wine_dataloader, wine_classes)
+
+    # train_breast_cancer_dataloader, test_breast_cancer_dataloader, breast_cancer_classes = prepare_breast_cancer_data()
+    # best_breast_cancer = select_best_model([4, 8, 32, 64, 128, 256, 384, 512], 30, 2, 100, train_breast_cancer_dataloader, test_breast_cancer_dataloader, "breast_cancer")
+    # plot_confusion_matrix_from_dataloader(best_breast_cancer, train_breast_cancer_dataloader, breast_cancer_classes)
 
 
 experiment_two()
