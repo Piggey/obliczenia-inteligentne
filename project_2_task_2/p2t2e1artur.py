@@ -17,7 +17,8 @@ class TwoFeaturesArturCNN(nn.Module):
         x = F.relu(F.max_pool2d(self.conv3(x), 2))
         x = x.view(-1, 3 * 3 * 64)
         x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
+        two_features = x
         x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
+
+        return F.log_softmax(x, dim=1), two_features
 
