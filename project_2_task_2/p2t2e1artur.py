@@ -197,11 +197,11 @@ def analyze_n_features_cnn():
 
 
 def experiment_one():
-    two_features_model = analyze_two_features_cnn()
-    torch.save(two_features_model.state_dict(), "two_features_artur.pt")
+    # two_features_model = analyze_two_features_cnn()
+    # torch.save(two_features_model.state_dict(), "two_features_artur.pt")
 
-    # n_features_model = analyze_n_features_cnn()
-    # torch.save(n_features_model.state_dict(), "./models/n_features_artur.pt")
+    n_features_model = analyze_n_features_cnn()
+    torch.save(n_features_model.state_dict(), "n_features_artur.pt")
 
 
 experiment_one()
