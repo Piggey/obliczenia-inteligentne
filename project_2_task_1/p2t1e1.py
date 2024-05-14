@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris, load_wine, load_breast_cancer
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from torch.utils.data import random_split, DataLoader
@@ -166,8 +166,8 @@ def ipca_n_components_analysis():
     conf_matrix = confusion_matrix(test_labels, np.argmax(model(test_images_lda).detach().numpy(), axis=1), labels=np.unique(test_labels))
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=np.unique(test_labels))
     display.plot()
-    plt.title(f'Confusion matrix for test MNIST dataset reduced using LDA (lsqr) with n_features=28')
-    plt.show()
+    plt.title(f'Test MNIST dataset; IncrementalPCA; n_components=28')
+    plt.savefig("conf_matrix_mnist_ipca_n_components=28.png")
 
 def ipca_2_components_analysis():
     train_mnist = datasets.MNIST('data', train=True, download=True, transform=flatten_transform)
@@ -220,16 +220,19 @@ def ipca_2_components_analysis():
     plt.ylim([y_min, y_max])
     plt.xlabel('x1')
     plt.ylabel('x2')
-    plt.title('Decision boundary plot for test MNIST dataset reduced using FastICA with n_components=2')
+    plt.title('Test MNIST dataset; IncrementalPCA; n_components=2')
     plt.legend()
-    plt.show()
+    # plt.show()
+    plt.savefig("decision_boundary_mnist_ipca_n_components=2.png")
+    plt.close()
 
     # Plot confusion matrix
     conf_matrix = confusion_matrix(test_labels, np.argmax(model(test_images_2d).detach().numpy(), axis=1), labels=np.unique(test_labels))
     display = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=np.unique(test_labels))
     display.plot()
-    plt.title(f'Confusion matrix for test MNIST dataset reduced using FastICA with n_components=2')
-    plt.show()
+    plt.title('Test MNIST dataset; IncrementalPCA; n_components=2')
+    plt.savefig("conf_matrix_mnist_ipca_n_components=2.png")
+    plt.close()
 
 
 def experiment_one():
@@ -255,14 +258,14 @@ def experiment_one():
     # pca_2_components_analysis()
 
     # Dawid
-    # ipca_2_components_analysis()
+    ipca_2_components_analysis()
 
     # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora z małą liczbą elementów (cech) (po jednym sposobie na osobe)
     # Artur - Linear Discriminant Analysis (9 cech)
     # lda_n_components_analysis()
 
     # Dawid
-    ipca_n_components_analysis()
+    # ipca_n_components_analysis()
 
 
 experiment_one()
