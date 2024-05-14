@@ -54,6 +54,24 @@ class TwoFeaturesCNNDawid(nn.Module):
         x = torch.relu(self.fc2(x))  # Uwaga: Nie stosujemy funkcji aktywacji na warstwie końcowej dla cech
         return x
 
+class CNNDawid(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, 3, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(128 * 3 * 3, 256)
+        self.fc2 = nn.Linear(256, 10)
+
+    def forward(self, x):
+        x = self.pool(torch.relu(self.conv1(x)))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.pool(torch.relu(self.conv3(x)))
+        x = x.view(-1, 128 * 3 * 3)
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
 
 def train(model, criterion, optimizer):
     train_accuracy = []
@@ -125,8 +143,7 @@ def visualize_decision_boundary(model, loader, outfile):
     plt.savefig(outfile)
     plt.close()
 
-def analyze_2_components():
-    model = TwoFeaturesCNNDawid()
+def analyze_model(model: nn.Module, with_decision_boundary=False):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARN_RATE)
 
@@ -137,8 +154,8 @@ def analyze_2_components():
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.title('accuracy scores; MNIST dataset; n_components=2')
-    plt.savefig('acc_scores_mnist_n_components=2.png')
+    plt.title('accuracy scores; MNIST dataset')
+    plt.savefig('acc_scores_mnist_best.png')
     plt.close()
 
     # Testowanie najlepszego modelu
@@ -159,12 +176,14 @@ def analyze_2_components():
     cm = confusion_matrix(true_labels, pred_labels)
     display = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=np.unique(true_labels))
     display.plot()
-    plt.savefig('confusion_matrix_mnist_n_components=2.png')
+    plt.savefig('confusion_matrix_mnist_best.png')
     plt.close()
 
-    visualize_decision_boundary(model, TEST_LOADER, 'decision_boundary_mnist_n_components=2.png')
+    if with_decision_boundary:
+        visualize_decision_boundary(model, TEST_LOADER, 'decision_boundary_mnist_best.png')
 
 # [[1, 0.45211666666666667, 0.4587], [2, 0.5237, 0.5246], [3, 0.6100333333333333, 0.6084], [4, 0.68645, 0.6786], [5, 0.7465666666666667, 0.7405]]
 
 if __name__ == '__main__':
-    analyze_2_components()
+    # analyze_model(TwoFeaturesCNNDawid(), with_decision_boundary=True)
+    analyze_model(CNNDawid())
