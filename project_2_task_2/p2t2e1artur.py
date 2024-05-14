@@ -16,25 +16,29 @@ transform = transforms.Compose([
 class TwoFeaturesArturCNN(nn.Module):
     def __init__(self):
         super(TwoFeaturesArturCNN, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, 5)  # 32x28x28
-        self.pool1 = nn.MaxPool2d(2, 2)  # 32x12x12
-        self.conv2 = nn.Conv2d(32, 64, 5)  # 64x10x10
-        self.pool2 = nn.MaxPool2d(2, 2)  # 64x4x4
-        self.fc1 = nn.Linear(64 * 4 * 4, 128)
-        self.fc2 = nn.Linear(128, 2)
+        self.conv1 = nn.Conv2d(1, 8, 5)  # 8x28x28
+        self.pool1 = nn.MaxPool2d(2, 2)  # 8x12x12
+        self.conv2 = nn.Conv2d(8, 4, 5)  # 16x10x10
+        self.pool2 = nn.MaxPool2d(2, 2)  # 16x4x4
+        self.fc1 = nn.Linear(4 * 4 * 4, 8)
+        self.fc2 = nn.Linear(8, 2)
         self.fc3 = nn.Linear(2, 10)
 
-    def forward(self, x):
-        x = nn.functional.relu(self.conv1(x))
-        x = self.pool1(x)
-        x = nn.functional.relu(self.conv2(x))
-        x = self.pool2(x)
-        x = x.view(-1, 64 * 4 * 4)  # flatten
-        x = nn.functional.relu(self.fc1(x))
-        x = nn.functional.relu(self.fc2(x))
-        two_features = x
-        x = self.fc3(x)
-        return x, two_features
+    def forward(self, x, x_two_features=False):
+        if not x_two_features:
+            x = nn.functional.relu(self.conv1(x))
+            x = self.pool1(x)
+            x = nn.functional.relu(self.conv2(x))
+            x = self.pool2(x)
+            x = x.view(-1, 4 * 4 * 4)  # flatten
+            x = nn.functional.relu(self.fc1(x))
+            x = nn.functional.relu(self.fc2(x))
+            two_features = x
+            x = self.fc3(x)
+            return x, two_features
+        else:
+            x = self.fc3(x)
+            return x, x
 
 
 class ArturCNN(nn.Module):
@@ -100,6 +104,23 @@ def train_model(model, loss_function, optimizer, epochs, train_dataloader, test_
 
         print(f"epoch {epoch + 1} finished; accuracy {model_accuracy(model, test_dataloader, is_two_features)}; loss {loss}")
 
+    if is_two_features:
+        for batch in test_dataloader:
+            inputs, labels = batch
+            outputs, two_features = model(inputs)
+            for i in range(10):
+                plt.scatter(-999, -999, alpha=1, label=str(i), cmap=cm.tab10)
+            plt.scatter(two_features.detach().numpy()[:, 0], two_features.detach().numpy()[:, 1], c=np.argmax(outputs.detach().numpy(), axis=1)[:], alpha=1, cmap=cm.tab10, s=50, marker="s", edgecolor='none')
+            # plt.scatter(X[:500, 0], X[:500, 1], c=y_true[:500], edgecolors='k', s=20, cmap=cm.tab10)
+            plt.xlabel('x1')
+            plt.ylabel('x2')
+            plt.xlim([0, 100])
+            plt.ylim([0, 100])
+            plt.legend()
+            plt.show()
+
+
+
 
 def analyze_two_features_cnn():
     train_mnist = datasets.MNIST('../data', train=True, download=True, transform=transform)
@@ -111,9 +132,31 @@ def analyze_two_features_cnn():
     model = TwoFeaturesArturCNN()
     loss_function = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.01)
-    train_model(model, loss_function, optimizer, 0, train_mnist_dataloader, test_mnist_dataloader, True)
+    train_model(model, loss_function, optimizer, 50, train_mnist_dataloader, test_mnist_dataloader, True)
 
-    # TODO: Plot decision boundary
+    # Plot decision boundary
+    x_min, x_max = 0, 100
+    y_min, y_max = 0, 100
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 1), np.arange(y_min, y_max, 1))
+    grid_points = np.c_[xx.ravel(), yy.ravel()]
+    grid_tensor = torch.tensor(grid_points, dtype=torch.float32)
+
+    # Create predictions for each element of grid in decision boundary
+    with torch.no_grad():
+        predictions = np.argmax(model(grid_tensor, True)[0].detach().numpy(), axis=1)
+        unique, counts = np.unique(predictions, return_counts=True)
+
+    # Add dummy points to get labels on the final plot
+    for i in range(10):
+        plt.scatter(-999, -999, alpha=1, label=str(i), cmap=cm.tab10)
+
+    plt.scatter(xx, yy, c=predictions, alpha=1, cmap=cm.tab10, s=50, marker="s", edgecolor='none')
+    plt.xlim([x_min, x_max])
+    plt.ylim([y_min, y_max])
+    plt.xlabel('x1')
+    plt.ylabel('x2')
+    plt.legend()
+    plt.show()
 
 
 def analyze_n_features_cnn():
