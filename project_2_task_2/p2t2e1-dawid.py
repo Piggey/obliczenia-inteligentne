@@ -1,103 +1,189 @@
-from typing import Union
-import torch.nn as nn
-import torchvision.transforms as transforms
-import torch.optim as optim
 import torch
-import torchvision.datasets as datasets
-import torch.utils.data as data
+import torch.nn as nn
+import torch.optim as optim
+import torch.utils
+import torch.utils.data
+import torchvision
+import torchvision.transforms as transforms
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+import numpy as np
 
-device = torch.device('cpu')
-
-transform = transforms.Compose([
-    transforms.ToTensor(),  # Konwersja obrazu PIL na tensor
-    transforms.Normalize((0.5,), (0.5,))  # Normalizacja obrazu
+# Przygotowanie danych
+TRANSFORM = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
 ])
 
-learning_rate = 0.001
-num_epochs = 10
+LEARN_RATE = 0.001
+NUM_EPOCHS = 10
+
+trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=TRANSFORM)
+TRAIN_LOADER = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+
+testset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=TRANSFORM)
+TEST_LOADER = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 
 class TwoFeaturesCNNDawid(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, device=device), # Wejście: 1 kanał (obraz szarości), wyjście: 32 kanały, kernel: 3x3
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2), 
+        self.conv1 = nn.Conv2d(1, 16, 3, padding=1)
+        self.conv2 = nn.Conv2d(16, 32, 3, padding=1)
+        self.fc1 = nn.Linear(32 * 7 * 7, 128)
+        self.fc2 = nn.Linear(128, 2)  # Warstwa kończąca się 2-elementowym wektorem cech
+        self.fc3 = nn.Linear(2, 10)    # Warstwa Linear dla klasyfikacji cyfr MNIST
 
-            nn.Conv2d(32, 64, kernel_size=3, device=device), # Wejście: 32 kanały, wyjście: 64 kanały, kernel: 3x3
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2), 
-        )
-        self.two_features = nn.Sequential(
-            nn.Linear(64*5*5, 128, device=device), # Wejście: 64*5*5 (rozmiar obrazu po przetworzeniu przez dwie warstwy konwolucyjne), wyjście: 128
-            nn.Linear(128, 2, device=device), # Wejście: 128, wyjście: 2 (2 cechy)
-        )
-        self.classify = nn.Linear(2, 10, device=device)
+    def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = torch.max_pool2d(x, 2)
+        x = torch.relu(self.conv2(x))
+        x = torch.max_pool2d(x, 2)
+        x = x.view(-1, 32 * 7 * 7)
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))  # Uwaga: Nie stosujemy funkcji aktywacji na warstwie końcowej dla cech
+        x = self.fc3(x)
+        return x
 
-    def forward(self, x: torch.Tensor) -> Union[torch.Tensor, torch.Tensor]:
-        x = self.conv(x)
-        # Spłaszczanie tensora dla warstw w pełni połączonych
-        x = x.view(-1, 64*5*5)
-        x = self.two_features(x)
-        two_features = x
-        x = self.classify(x)
+    def forward_conv(self, x):
+        x = torch.relu(self.conv1(x))
+        x = torch.max_pool2d(x, 2)
+        x = torch.relu(self.conv2(x))
+        x = torch.max_pool2d(x, 2)
+        x = x.view(-1, 32 * 7 * 7)
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))  # Uwaga: Nie stosujemy funkcji aktywacji na warstwie końcowej dla cech
+        return x
 
-        return x, two_features
+class CNNDawid(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, 3, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(128 * 3 * 3, 256)
+        self.fc2 = nn.Linear(256, 10)
 
+    def forward(self, x):
+        x = self.pool(torch.relu(self.conv1(x)))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.pool(torch.relu(self.conv3(x)))
+        x = x.view(-1, 128 * 3 * 3)
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
 
-model = TwoFeaturesCNNDawid()
+def train(model, criterion, optimizer):
+    train_accuracy = []
+    test_accuracy = []
+    best_accuracy = 0.0
+    for epoch in range(NUM_EPOCHS):
+        running_loss = 0.0
+        correct_train = 0
+        total_train = 0
+        for inputs, labels in TRAIN_LOADER:
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
 
-# Pobranie danych treningowych
-trainset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-trainloader = data.DataLoader(trainset, batch_size=1024, shuffle=True)
+            _, predicted = torch.max(outputs, 1)
+            total_train += labels.size(0)
+            correct_train += (predicted == labels).sum().item()
 
-testset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-testloader = data.DataLoader(testset, batch_size=1024, shuffle=True)
+        epoch_train_accuracy = correct_train / total_train
+        train_accuracy.append(epoch_train_accuracy)
 
-# Definicja funkcji straty i optymizatora
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        # Test modelu
+        correct_test = 0
+        total_test = 0
+        with torch.no_grad():
+            for inputs, labels in TEST_LOADER:
+                outputs = model(inputs)
+                _, predicted = torch.max(outputs, 1)
+                total_test += labels.size(0)
+                correct_test += (predicted == labels).sum().item()
 
-# Trenowanie sieci
-num_epochs = 5
-def accuracy(model: nn.Module, testloader: data.DataLoader) -> float:
-    correct = 0
-    total = 0
+            epoch_test_accuracy = correct_test / total_test
+            test_accuracy.append(epoch_test_accuracy)
+
+            if epoch_test_accuracy > best_accuracy:
+                best_accuracy = epoch_test_accuracy
+                best_model = model.state_dict()
+
+        print(f'Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {running_loss / len(TRAIN_LOADER)}, '
+              f'Train Accuracy: {epoch_train_accuracy}, Test Accuracy: {epoch_test_accuracy}')
+
+    print(f'Best Test Accuracy: {best_accuracy}')
+    return train_accuracy, test_accuracy, best_model
+
+def visualize_decision_boundary(model, loader, outfile):
+    model.eval()
+    features = []
+    labels = []
     with torch.no_grad():
-        for inputs, labels in testloader:
-            outputs, _ = model(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+        for inputs, target in loader:
+            output = model.forward_conv(inputs)
+            features.extend(output.squeeze().numpy())
+            labels.extend(target.numpy())
 
-    return correct / total
+    features = np.array(features)
+    labels = np.array(labels)
 
+    plt.figure(figsize=(10, 6))
+    for i in range(10):
+        plt.scatter(features[labels == i, 0], features[labels == i, 1], label=str(i))
 
-accuracies = []
-for epoch in range(num_epochs):
-    running_loss = 0.0
-    for i, (inputs, labels) in enumerate(trainloader, 0):
-        optimizer.zero_grad()
+    plt.title('Decision Boundary Visualization')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.legend()
+    plt.savefig(outfile)
+    plt.close()
 
-        # Forward pass
-        outputs, two_features = model(inputs)
-        loss = criterion(outputs, labels)
+def analyze_model(model: nn.Module, with_decision_boundary=False):
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=LEARN_RATE)
 
-        # Backward pass i aktualizacja wag
-        loss.backward()
-        optimizer.step()
+    train_accuracy, test_accuracy, best_model = train(model, criterion, optimizer)
 
-        running_loss += loss.item()
-        if i % 10 == 9:
-            print('[%d, %2d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 100))
-            running_loss = 0.0
+    plt.plot(train_accuracy, label='Train Accuracy')
+    plt.plot(test_accuracy, label='Test Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.title('accuracy scores; MNIST dataset')
+    plt.savefig('acc_scores_mnist_best.png')
+    plt.close()
 
-    acc_train = accuracy(model, trainloader)
-    acc_test = accuracy(model, testloader)
-    print(f'{epoch=}; {acc_train=}; {acc_test=}')
-    accuracies.append([epoch + 1, acc_train, acc_test])
+    # Testowanie najlepszego modelu
+    model.load_state_dict(best_model)
+    model.eval()
 
-print(accuracies)
+    # Predykcja na zbiorze testowym
+    pred_labels = []
+    true_labels = []
+    with torch.no_grad():
+        for inputs, labels in TEST_LOADER:
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs, 1)
+            pred_labels.extend(predicted.numpy())
+            true_labels.extend(labels.numpy())
 
+    # Macierz pomyłek
+    cm = confusion_matrix(true_labels, pred_labels)
+    display = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=np.unique(true_labels))
+    display.plot()
+    plt.savefig('confusion_matrix_mnist_best.png')
+    plt.close()
+
+    if with_decision_boundary:
+        visualize_decision_boundary(model, TEST_LOADER, 'decision_boundary_mnist_best.png')
 
 # [[1, 0.45211666666666667, 0.4587], [2, 0.5237, 0.5246], [3, 0.6100333333333333, 0.6084], [4, 0.68645, 0.6786], [5, 0.7465666666666667, 0.7405]]
+
+if __name__ == '__main__':
+    # analyze_model(TwoFeaturesCNNDawid(), with_decision_boundary=True)
+    analyze_model(CNNDawid())
