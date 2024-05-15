@@ -100,9 +100,20 @@ NUM_EPOCHS = 5
 
 trainset = datasets.CIFAR10(root='./data', train=True, download=True, transform=TRANSFORM)
 
+K = 100
+subsample_train_indices = torch.randperm(len(trainset))[:K]
+train_loader_original_subset = data.DataLoader(trainset, batch_size=32, sampler=data.SubsetRandomSampler(subsample_train_indices))
+
+transform_augmented = transforms.Compose([
+    transforms.RandomAffine(degrees=20, translate=(0.1, 0.1), scale=(0.8, 1.2)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+trainset_augmented = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_augmented)
+
 K = 1000
 subsample_train_indices = torch.randperm(len(trainset))[:K]
-# train_loader_original_subset = data.DataLoader(trainset_original, batch_size=32, sampler=torch.utils.data.SubsetRandomSampler(subsample_train_indices))
+train_loader_augmented_subset = data.DataLoader(trainset_augmented, batch_size=32, sampler=data.SubsetRandomSampler(subsample_train_indices))
 
 TRAIN_LOADER = data.DataLoader(trainset, batch_size=32, num_workers=2, sampler=data.SubsetRandomSampler(subsample_train_indices))
 
@@ -113,7 +124,7 @@ if __name__ == '__main__':
     accuracies = []
     best_mean_accuracy = 0
 
-    for i in range(5):
+    for i in range(1):
         model = CNN()
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=LEARN_RATE)
@@ -122,6 +133,9 @@ if __name__ == '__main__':
         accuracy = test_accuracy(model, TEST_LOADER)
         accuracies.append(accuracy)
         print(f'pass {i}; {accuracy=}')
+
+        visualize_decision_boundary(model, train_loader_original_subset, 'decision_boundary_100_original_cifar.png')
+        visualize_decision_boundary(model, train_loader_augmented_subset, 'decision_boundary_100_augmented_cifar.png')
 
     mean_accuracy = np.mean(accuracies)
     std_accuracy = np.std(accuracies)
