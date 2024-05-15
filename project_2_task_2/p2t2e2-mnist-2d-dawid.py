@@ -5,6 +5,7 @@ import torch.utils.data
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
+import matplotlib.pyplot as plt
 
 class CNN(nn.Module):
     def __init__(self):
@@ -33,7 +34,7 @@ class CNN(nn.Module):
         x = torch.max_pool2d(x, 2)
         x = x.view(-1, 32 * 7 * 7)
         x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))  # Uwaga: Nie stosujemy funkcji aktywacji na warstwie końcowej dla cech
+        x = self.fc2(x)  # Uwaga: Nie stosujemy funkcji aktywacji na warstwie końcowej dla cech
         return x
 
 def train(model, criterion, optimizer):
@@ -65,6 +66,31 @@ def test_accuracy(model, testloader):
             correct += (predicted == labels).sum().item()
     return correct / total
 
+def visualize_decision_boundary(model, loader, outfile):
+    model.eval()
+    features = []
+    labels = []
+    with torch.no_grad():
+        for inputs, target in loader:
+            output = model.forward_conv(inputs)
+            features.extend(output.squeeze().numpy())
+            labels.extend(target.numpy())
+
+    features = np.array(features)
+    labels = np.array(labels)
+
+    plt.figure(figsize=(10, 6))
+    for i in range(10):
+        plt.scatter(features[labels == i, 0], features[labels == i, 1], label=str(i))
+
+    plt.title('Decision Boundary Visualization')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.legend()
+    plt.savefig(outfile)
+    plt.close()
+
+
 TRANSFORM = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.5,), (0.5,))
@@ -75,8 +101,9 @@ NUM_EPOCHS = 5
 
 trainset_original = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=TRANSFORM)
 
-K = 2000
+K = 100
 subsample_train_indices = torch.randperm(len(trainset_original))[:K]
+train_loader_original_subset = torch.utils.data.DataLoader(trainset_original, batch_size=32, sampler=torch.utils.data.SubsetRandomSampler(subsample_train_indices))
 
 transform_augmented = transforms.Compose([
     transforms.RandomAffine(degrees=20, translate=(0.1, 0.1), scale=(0.8, 1.2)),
@@ -84,6 +111,10 @@ transform_augmented = transforms.Compose([
     transforms.Normalize((0.5,), (0.5,))
 ])
 trainset_augmented = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform_augmented)
+
+K = 1000
+subsample_train_indices = torch.randperm(len(trainset_original))[:K]
+train_loader_augmented_subset = torch.utils.data.DataLoader(trainset_augmented, batch_size=32, sampler=torch.utils.data.SubsetRandomSampler(subsample_train_indices))
 
 trainset_combined = torch.utils.data.ConcatDataset([trainset_original, trainset_augmented])
 TRAIN_LOADER = torch.utils.data.DataLoader(trainset_combined, batch_size=32, num_workers=2, sampler=torch.utils.data.SubsetRandomSampler(subsample_train_indices))
@@ -95,7 +126,7 @@ if __name__ == '__main__':
     accuracies = []
     best_mean_accuracy = 0
 
-    for i in range(10):
+    for i in range(1):
         model = CNN()
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -105,12 +136,15 @@ if __name__ == '__main__':
         accuracies.append(accuracy)
         print(f'pass {i}; {accuracy=}')
 
+        visualize_decision_boundary(model, train_loader_original_subset, 'decision_boundary_subset_100_original_mnist.png')
+        visualize_decision_boundary(model, train_loader_augmented_subset, 'decision_boundary_subset_100_augmented_mnist.png')
+
     mean_accuracy = np.mean(accuracies)
     std_accuracy = np.std(accuracies)
 
     if mean_accuracy > best_mean_accuracy:
         best_mean_accuracy = mean_accuracy
-        torch.save(model.state_dict(), '2d-mnist-augmented-dawid.model')
+        # torch.save(model.state_dict(), '2d-mnist-augmented-dawid.model')
 
     print(f'{mean_accuracy=}; {std_accuracy=}')
 
