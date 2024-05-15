@@ -65,10 +65,21 @@ NUM_EPOCHS = 5
 
 trainset = datasets.MNIST(root='./data', train=True, download=True, transform=TRANSFORM)
 
-K = 1000
+transform_augmented = transforms.Compose([
+    transforms.RandomAffine(degrees=20, translate=(0.1, 0.1), scale=(0.8, 1.2)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+trainset_augmented = datasets.MNIST(root='./data', train=True, download=True, transform=transform_augmented)
+
+trainset_combined = data.ConcatDataset([trainset, trainset_augmented])
+
+# TRAIN_LOADER = data.DataLoader(trainset_combined, batch_size=32, num_workers=2)
+
+K = 2000
 subsample_train_indices = torch.randperm(len(trainset))[:K]
 
-TRAIN_LOADER = data.DataLoader(trainset, batch_size=32, num_workers=2, sampler=data.SubsetRandomSampler(subsample_train_indices))
+TRAIN_LOADER = data.DataLoader(trainset_combined, batch_size=32, num_workers=2, sampler=data.SubsetRandomSampler(subsample_train_indices))
 
 testset = datasets.MNIST(root='./data', train=False, download=True, transform=TRANSFORM)
 TEST_LOADER = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
@@ -77,7 +88,7 @@ if __name__ == '__main__':
     accuracies = []
     best_mean_accuracy = 0
 
-    for i in range(10):
+    for i in range(5):
         model = CNN()
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=LEARN_RATE)
@@ -92,7 +103,7 @@ if __name__ == '__main__':
 
     if mean_accuracy > best_mean_accuracy:
         best_mean_accuracy = mean_accuracy
-        torch.save(model.state_dict(), 'mnist-dawid.model')
+        torch.save(model.state_dict(), 'mnist-augmented-dawid.model')
 
     print(f'{mean_accuracy=}; {std_accuracy=}')
 
@@ -108,3 +119,16 @@ if __name__ == '__main__':
 
 # 1000
 # mean_accuracy=0.94406; std_accuracy=0.008767690687974788 
+
+# AUGMENTACJA
+# wszystkie
+# mean_accuracy=0.9925; std_accuracy=0.0008524474568363051
+
+# 100
+# mean_accuracy=0.6559999999999999; std_accuracy=0.10009573417483886
+
+# 200
+# mean_accuracy=0.88612; std_accuracy=0.013962292075443765
+
+# 1000
+# mean_accuracy=0.95938; std_accuracy=0.0031644272783554637
