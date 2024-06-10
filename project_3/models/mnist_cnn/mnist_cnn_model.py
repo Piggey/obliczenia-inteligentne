@@ -5,20 +5,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-# Transformacje danych
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
-])
-
-# Załaduj dane MNIST
-train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-
-# Stwórz DataLoader
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
-
 # Zdefiniuj model CNN
 class CNN(nn.Module):
     def __init__(self):
@@ -39,44 +25,60 @@ class CNN(nn.Module):
         x = self.fc2(x)
         return x
 
-model = CNN()
+if __name__ == '__main__':
+  # Transformacje danych
+  transform = transforms.Compose([
+      transforms.ToTensor(),
+      transforms.Normalize((0.5,), (0.5,))
+  ])
 
-# Hiperparametry
-learning_rate = 0.001
-num_epochs = 10
+  # Załaduj dane MNIST
+  train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+  test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
 
-# Funkcja kosztu i optymalizator
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+  # Stwórz DataLoader
+  train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+  test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
-# Trening
-for epoch in range(num_epochs):
-    model.train()
-    running_loss = 0.0
-    for i, (images, labels) in enumerate(train_loader):
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
-    
-    print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 
-# Ocena modelu
-model.eval()
-correct = 0
-total = 0
-with torch.no_grad():
-    for images, labels in test_loader:
-        outputs = model(images)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+  model = CNN()
 
-accuracy = correct / total
-print(f'Accuracy on test set: {accuracy:.4f}')
+  # Hiperparametry
+  learning_rate = 0.001
+  num_epochs = 10
 
-# Zapisz model do pliku
-torch.save(model.state_dict(), 'cnn_mnist_model.pth')
-print('Model saved to cnn_mnist_model.pth')
+  # Funkcja kosztu i optymalizator
+  criterion = nn.CrossEntropyLoss()
+  optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+  # Trening
+  for epoch in range(num_epochs):
+      model.train()
+      running_loss = 0.0
+      for i, (images, labels) in enumerate(train_loader):
+          optimizer.zero_grad()
+          outputs = model(images)
+          loss = criterion(outputs, labels)
+          loss.backward()
+          optimizer.step()
+          running_loss += loss.item()
+      
+      print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
+
+  # Ocena modelu
+  model.eval()
+  correct = 0
+  total = 0
+  with torch.no_grad():
+      for images, labels in test_loader:
+          outputs = model(images)
+          _, predicted = torch.max(outputs.data, 1)
+          total += labels.size(0)
+          correct += (predicted == labels).sum().item()
+
+  accuracy = correct / total
+  print(f'Accuracy on test set: {accuracy:.4f}')
+
+  # Zapisz model do pliku
+  torch.save(model.state_dict(), 'cnn_mnist_model.pth')
+  print('Model saved to cnn_mnist_model.pth')
