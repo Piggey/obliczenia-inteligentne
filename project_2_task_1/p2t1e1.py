@@ -13,7 +13,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from matplotlib import cm
 
 from utils import plot_voronoi_diagram
-
+from sklearn.metrics import silhouette_score
 
 def flatten_analysis():
     train_mnist = datasets.MNIST('../data', train=True, download=True, transform=flatten_transform)
@@ -50,6 +50,9 @@ def pca_2_components_analysis():
     train_images_2d = torch.tensor(pca.transform(train_images.numpy()))
     train_mnist = CustomDataset((train_images_2d, train_labels))
     train_mnist_dataloader = DataLoader(dataset=train_mnist, batch_size=128, shuffle=False)
+
+    print(silhouette_score(train_images_2d, train_labels))
+    print(f"Silhouette scroe for PCA 2 features: {silhouette_score(train_images_2d, train_labels)}")
 
     # Split test dataset into images and labels, apply Principal Component Analysis trained earlier
     test_images, test_labels = next(iter(test_mnist_dataloader))
@@ -123,6 +126,9 @@ def lda_n_components_analysis():
     n_features = test_images_lda.shape[1]
     print(f"N features after LDA = {n_features}")
 
+    print(f"Silhouette scroe for LDA {n_features} features: {silhouette_score(train_images_lda, train_labels)}")
+
+
     # Create and train model
     model = CustomMLP(test_images_lda.shape[1], 10, 32)
     loss_function = nn.CrossEntropyLoss()
@@ -156,6 +162,8 @@ def ipca_n_components_analysis():
     test_mnist_dataset = CustomDataset((test_images_lda, test_labels))
     test_mnist_dataloader = DataLoader(dataset=test_mnist_dataset, batch_size=128, shuffle=False)
 
+    print(f"Silhouette scroe for IPCA 28 features: {silhouette_score(train_images_lda, train_labels)}")
+
     # Create and train model
     model = CustomMLP(28, 10, 32)
     loss_function = nn.CrossEntropyLoss()
@@ -188,6 +196,8 @@ def ipca_2_components_analysis():
     test_images_2d = torch.tensor(ipca.transform(test_images.numpy()), dtype=torch.float32)
     test_mnist = CustomDataset((test_images_2d, test_labels))
     test_mnist_dataloader = DataLoader(dataset=test_mnist, batch_size=128, shuffle=False)
+
+    print(f"Silhouette scroe for IPCA 2 features: {silhouette_score(train_images_2d, train_labels)}")
 
     # Create and train model
     model = CustomMLP(2, 10, 32)
@@ -255,17 +265,17 @@ def experiment_one():
 
     # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora 2 elementów (cech) (po jednym sposobie na osobe)
     # Artur - Principal Component Analysis
-    # pca_2_components_analysis()
+    pca_2_components_analysis()
 
     # Dawid
     ipca_2_components_analysis()
 
     # TODO: MNIST 2x ekstrakcja - spłaszczenia do wektora z małą liczbą elementów (cech) (po jednym sposobie na osobe)
     # Artur - Linear Discriminant Analysis (9 cech)
-    # lda_n_components_analysis()
+    lda_n_components_analysis()
 
     # Dawid
-    # ipca_n_components_analysis()
+    ipca_n_components_analysis()
 
 
 experiment_one()
